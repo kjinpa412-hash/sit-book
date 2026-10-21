@@ -589,6 +589,25 @@ main { padding-bottom: calc(var(--tabbar-h) + 40px + env(safe-area-inset-bottom,
 .sheet { max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 12px); }
 @media (display-mode: standalone) { .top { padding-top: max(env(safe-area-inset-top, 0px), 20px); } }
 
+/* Photos */
+.thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+.thumb { width: 78px; height: 78px; border-radius: 13px; overflow: hidden; border: 1px solid var(--line); background: var(--surface-2); display: grid; place-items: center; position: relative; cursor: pointer; flex: none; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.thumb.add { color: var(--yellow); font-size: 11.5px; font-weight: 700; gap: 3px; align-content: center; justify-items: center; border: 1.5px dashed rgba(245,184,0,.45); background: rgba(245,184,0,.06); }
+.thumb.missing::after { content: "Not on this phone"; position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-size: 10px; color: var(--brown-300); padding: 4px; }
+.thumbs.sm .thumb { width: 54px; height: 54px; border-radius: 10px; }
+.ph-count { display: inline-flex; align-items: center; gap: 3px; color: var(--yellow-deep); font-weight: 700; }
+.ph-count svg { vertical-align: -2px; }
+.viewer { position: fixed; inset: 0; z-index: 90; background: rgba(8,5,3,.97); display: flex; flex-direction: column; opacity: 0; transition: opacity .25s var(--ease); padding-top: env(safe-area-inset-top, 0px); }
+.viewer.show { opacity: 1; }
+.viewer-scroll { flex: 1; min-height: 0; overflow: auto; display: grid; place-items: center; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.viewer img { max-width: 100%; max-height: 100%; object-fit: contain; transition: width .25s var(--ease); }
+.viewer.zoom .viewer-scroll { place-items: start; }
+.viewer.zoom img { max-width: none; max-height: none; width: 260%; }
+.viewer-hint { text-align: center; font-size: 12.5px; color: var(--brown-300); padding: 6px; }
+.viewer-bar { display: flex; gap: 10px; padding: 8px 16px calc(14px + env(safe-area-inset-bottom, 0px)); }
+.viewer-bar .btn { flex: 1; }
+
 /* Readability */
 body { font-size: 15.5px; }
 .li-title { font-size: 15.5px; }
@@ -629,6 +648,15 @@ body { font-size: 15.5px; }
   </div></div>
   <div class="sheet-body" id="sheetBody"></div>
 </section>
+<div class="viewer" id="viewer" hidden role="dialog" aria-label="Photo">
+  <div class="viewer-scroll" data-a="zoomPhoto"><img id="viewerImg" alt="Photo"></div>
+  <div class="viewer-hint">Tap the photo to zoom</div>
+  <div class="viewer-bar">
+    <button class="btn btn-soft" data-a="sharePhoto" id="viewerShare"></button>
+    <button class="btn btn-danger" data-a="removePhoto" id="viewerRemove"></button>
+    <button class="btn btn-primary" data-a="closeViewer" id="viewerClose"></button>
+  </div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -918,6 +946,7 @@ function render(anim) {
   v.classList.remove('enter', 'enter-back');
   if (anim) { void v.offsetWidth; v.classList.add(anim === 'back' ? 'enter-back' : 'enter'); }
   layoutSegs(v);
+  fillImgs(v);
   if (ui.tab === 'calc' && ui.calc) updateCalc(false);
   renderTabs();
 }
@@ -1029,6 +1058,7 @@ function diaryCard(k) {
   return `<button class="card pad diary" style="width:100%;text-align:left" data-a="diarySheet" data-d="${k}">
     ${d.weather ? `<div><span class="pill neutral">${esc(d.weather)}</span></div>` : ''}
     ${part('Work done', d.work)}${part('Problems / needed', d.issues)}
+    ${thumbsRO(d.photos)}
     <div class="small" style="color:var(--yellow-deep);font-weight:700">Tap to edit</div>
   </button>`;
 }
@@ -1092,7 +1122,7 @@ function stockRow(e) {
   const m = matById(e.mat);
   return `<button class="li" data-a="stockEdit" data-id="${e.id}">
     <span class="dot ${e.kind}">${ic(e.kind === 'in' ? 'arrIn' : 'arrOut', 18)}</span>
-    <div class="li-main"><div class="li-title">${esc(m.name)} ${e.kind === 'in' ? 'received' : 'used'}</div><div class="li-sub">${pretty(e.date)}${e.supplier ? ' · ' + esc(e.supplier) : ''}${e.note ? ' · ' + esc(e.note) : ''}</div></div>
+    <div class="li-main"><div class="li-title">${esc(m.name)} ${e.kind === 'in' ? 'received' : 'used'}</div><div class="li-sub">${pretty(e.date)}${e.supplier ? ' · ' + esc(e.supplier) : ''}${e.note ? ' · ' + esc(e.note) : ''}${photoCount(e)}</div></div>
     <div class="li-end"><b>${e.kind === 'in' ? '+' : '−'}${fmt(e.qty)} ${esc(m.unit)}</b>${e.kind === 'in' && e.rate ? `<div class="li-sub">${money(e.qty * e.rate)}</div>` : ''}</div>
   </button>`;
 }
@@ -1127,7 +1157,7 @@ function stockExp() {
   ${Object.keys(byCat).length ? `<div class="card pad">${Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([c, v]) => `<div class="rule"><div class="rule-k">${esc(c)}</div><div class="rule-v num">${money(v)}</div></div>`).join('')}</div>` : ''}
   <div class="card list">${list.length ? list.map(e => `<button class="li" data-a="expenseSheet" data-id="${e.id}">
       <span class="dot out">${ic('wallet', 18)}</span>
-      <div class="li-main"><div class="li-title">${esc(e.cat)}</div><div class="li-sub">${pretty(e.date)}${e.note ? ' · ' + esc(e.note) : ''}</div></div>
+      <div class="li-main"><div class="li-title">${esc(e.cat)}</div><div class="li-sub">${pretty(e.date)}${e.note ? ' · ' + esc(e.note) : ''}${photoCount(e)}</div></div>
       <div class="li-end"><b>${money(e.amount)}</b></div></button>`).join('')
     : `<div class="empty"><div class="empty-ic">${ic('wallet', 26)}</div><b>No expenses this month</b><div class="muted small">Note transport, tea, tools, JCB and other cash spent, so you know the real cost of the site.</div></div>`}</div>`;
 }
@@ -1504,6 +1534,7 @@ function openSheet(title, body, onSubmit) {
   document.body.classList.add('locked');
   $('#sheetBody').scrollTop = 0;
   layoutSegs($('#sheetBody'));
+  drawThumbs(); fillImgs($('#sheetBody'));
   guardBack();
   const first = $('#sheetBody').querySelector('input:not([type=hidden])');
   if (first && matchMedia('(pointer:fine)').matches) setTimeout(() => first.focus(), 350);
@@ -1534,16 +1565,95 @@ function squarePhoto(file, size) {
   });
 }
 
+/* ================= Bill & site photos =================
+   Photos live in IndexedDB (far more room than the main save); entries keep only their ids. */
+const PH = { db: null, cache: {} };
+function phDb() {
+  return PH.db || (PH.db = new Promise((ok, fail) => {
+    const r = indexedDB.open('sitebook-photos', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('photos');
+    r.onsuccess = () => ok(r.result); r.onerror = () => fail(r.error);
+  }));
+}
+async function phTx(mode, fn) {
+  const db = await phDb();
+  return new Promise((ok, fail) => {
+    const t = db.transaction('photos', mode), req = fn(t.objectStore('photos'));
+    t.oncomplete = () => ok(req && req.result); t.onerror = () => fail(t.error);
+  });
+}
+const phPut = (id, data) => { PH.cache[id] = data; return phTx('readwrite', s => s.put(data, id)); };
+const phGet = async id => PH.cache[id] || (PH.cache[id] = await phTx('readonly', s => s.get(id)));
+const phDel = id => { delete PH.cache[id]; return phTx('readwrite', s => s.delete(id)); };
+const phKeys = () => phTx('readonly', s => s.getAllKeys());
+const usedPhotos = () => new Set([...S.stock, ...S.expenses, ...S.payments, ...Object.values(S.diary)].flatMap(x => x.photos || []));
+
+// Bills must stay readable: long side 1600 px, JPEG ~0.72 (about 150–300 KB each).
+function shrinkPhoto(file, max = 1600) {
+  return new Promise((ok, fail) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); ok(c.toDataURL('image/jpeg', .72));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); fail(); };
+    img.src = url;
+  });
+}
+let sheetPhotos = [];
+// Editable photo picker inside a sheet form; the chosen ids are saved with the record on submit.
+function photoField(ids, label) {
+  sheetPhotos = [...(ids || [])];
+  return `<div class="field full"><label>${label}</label><div class="thumbs" id="thumbs"></div></div>`;
+}
+function drawThumbs() {
+  const box = $('#thumbs'); if (!box) return;
+  box.innerHTML = sheetPhotos.map(id => `<button type="button" class="thumb" data-a="viewPhoto" data-id="${id}" data-edit="1"><img data-ph="${id}" alt="Photo"></button>`).join('') +
+    `<label class="thumb add" for="phFile">${ic('camera', 22)}<span>${sheetPhotos.length ? 'Add more' : 'Add photo'}</span></label><input type="file" id="phFile" accept="image/*" multiple hidden>`;
+  fillImgs(box);
+  $('#phFile').onchange = async ev => {
+    const files = [...ev.target.files];
+    if (files.length) toast(files.length > 1 ? `Adding ${files.length} photos…` : 'Adding photo…');
+    for (const f of files) {
+      try { const id = 'ph' + uid(); await phPut(id, await shrinkPhoto(f)); sheetPhotos.push(id); }
+      catch (e) { toast('Could not add that photo', 'warn'); }
+    }
+    drawThumbs();
+  };
+}
+// Read-only thumbnails for lists and cards.
+const thumbsRO = (ids, cls = 'sm') => ids && ids.length ? `<div class="thumbs ${cls}">${ids.map(id => `<span class="thumb" role="button" data-a="viewPhoto" data-id="${id}"><img data-ph="${id}" alt="Photo"></span>`).join('')}</div>` : '';
+const photoCount = x => x.photos && x.photos.length ? ` · <span class="ph-count">${ic('camera', 13, 2.2)}${x.photos.length}</span>` : '';
+function fillImgs(root) {
+  root.querySelectorAll('img[data-ph]').forEach(async img => {
+    const d = await phGet(img.dataset.ph).catch(() => null);
+    if (d) img.src = d; else img.closest('.thumb').classList.add('missing');
+  });
+}
+const viewer = { id: null, edit: false };
+async function openViewer(id, edit) {
+  const d = await phGet(id).catch(() => null);
+  if (!d) return toast('Photo not found on this phone', 'warn');
+  Object.assign(viewer, { id, edit });
+  const v = $('#viewer');
+  $('#viewerImg').src = d; v.classList.remove('zoom'); $('#viewerRemove').hidden = !edit;
+  v.hidden = false; requestAnimationFrame(() => v.classList.add('show'));
+}
+function closeViewer() { const v = $('#viewer'); v.classList.remove('show'); setTimeout(() => { v.hidden = true; $('#viewerImg').removeAttribute('src'); }, 250); }
+
 /* Phone back button: closes the sheet, then the calculator, then returns Home, before leaving the app.
    Only when the app runs on its own (installed or opened directly), not inside another page. */
 let topLevel = false;
 try { topLevel = window.top === window; } catch (e) {}
 let guarded = false;
-function backDepth() { return sheetOpen() || ui.calc || ui.tab !== 'home'; }
+function backDepth() { return !$('#viewer').hidden || sheetOpen() || ui.calc || ui.tab !== 'home'; }
 function guardBack() { if (topLevel && !guarded && backDepth()) { history.pushState({ guard: 1 }, ''); guarded = true; } }
 addEventListener('popstate', () => {
   guarded = false;
-  if (sheetOpen()) closeSheet();
+  if (!$('#viewer').hidden) closeViewer();
+  else if (sheetOpen()) closeSheet();
   else if (ui.calc) A.closeCalc();
   else if (ui.tab !== 'home') A.tab({ id: 'home' });
   guardBack();
@@ -1678,6 +1788,7 @@ function stockSheet(kind, prefill = {}, editId) {
         ${kind === 'in' ? fld('sSup', 'Supplier', prefill.supplier || '', 'list="supList" autocomplete="off" placeholder="Shop or dealer name"', '', false) + supList() : ''}
         ${fld('sNote', kind === 'in' ? 'Bill no. / note' : 'Used for', prefill.note || '', 'autocomplete="off"')}
       </div>
+      ${photoField(prefill.photos, kind === 'in' ? 'Bill / challan photo' : 'Photo (optional)')}
       <div class="muted small" id="stockHint"></div>
       <button class="btn btn-primary btn-block" type="submit">${ic('check', 18, 2.5)} ${e ? 'Save changes' : 'Save entry'}</button>
       ${e ? `<button class="btn btn-danger btn-block" type="button" data-a="delStock" data-id="${e.id}">${ic('trash', 18)} Delete entry</button>` : ''}
@@ -1685,7 +1796,7 @@ function stockSheet(kind, prefill = {}, editId) {
     const fd = new FormData(form);
     const qty = n(fd.get('sQty'));
     if (!qty) return toast('Enter a quantity');
-    const rec = { mat: fd.get('sMat'), kind, qty, date: fd.get('sDate') || today(), rate: kind === 'in' ? n(fd.get('sRate')) : 0, supplier: kind === 'in' ? String(fd.get('sSup') || '').trim() : '', note: String(fd.get('sNote') || '').trim() };
+    const rec = { mat: fd.get('sMat'), kind, qty, date: fd.get('sDate') || today(), rate: kind === 'in' ? n(fd.get('sRate')) : 0, supplier: kind === 'in' ? String(fd.get('sSup') || '').trim() : '', note: String(fd.get('sNote') || '').trim(), photos: [...sheetPhotos] };
     if (e) Object.assign(e, rec); else S.stock.push({ id: uid(), ...rec });
     save(); closeSheet(); render();
     const m = matById(rec.mat);
@@ -1707,13 +1818,14 @@ function expenseSheet(editId) {
         ${fld('xAmt', 'Amount', e ? e.amount : '', 'inputmode="decimal" required placeholder="500"', '₹', false)}
         ${fld('xDate', 'Date', e ? e.date : today(), 'type="date" required', '', false)}
         ${fld('xNote', 'Note', e ? e.note : '', 'autocomplete="off" placeholder="Paid to, what for"')}
+        ${photoField(e && e.photos, 'Bill / receipt photo')}
       </div>
       <button class="btn btn-primary btn-block" type="submit">${ic('check', 18, 2.5)} ${e ? 'Save changes' : 'Save expense'}</button>
       ${e ? `<button class="btn btn-danger btn-block" type="button" data-a="delExpense" data-id="${e.id}">${ic('trash', 18)} Delete expense</button>` : ''}
     </form>`, form => {
     const fd = new FormData(form), amount = n(fd.get('xAmt'));
     if (!amount) return toast('Enter the amount', 'warn');
-    const rec = { cat: fd.get('xCat'), amount, date: fd.get('xDate') || today(), note: String(fd.get('xNote') || '').trim() };
+    const rec = { cat: fd.get('xCat'), amount, date: fd.get('xDate') || today(), note: String(fd.get('xNote') || '').trim(), photos: [...sheetPhotos] };
     if (e) Object.assign(e, rec); else S.expenses.push({ id: uid(), ...rec });
     save(); closeSheet(); render(); toast(`${money(amount)} ${e ? 'updated' : 'saved'}`);
   });
@@ -1734,14 +1846,15 @@ function paySheet(name) {
         ${fld('pAmt', 'Amount', s && s.due > 0 ? Math.round(s.due) : '', 'inputmode="decimal" required placeholder="0"', '₹', false)}
         ${fld('pDate', 'Date', today(), 'type="date" required', '', false)}
         ${fld('pNote', 'Note', '', 'autocomplete="off" placeholder="Cash, UPI, cheque no."')}
+        ${photoField([], 'Receipt / UPI screenshot')}
       </div>
       <button class="btn btn-primary btn-block" type="submit">${ic('wallet', 18)} Save payment</button>
     </form>
-    ${hist.length ? `<h2 class="sec">Payments</h2><div class="card list">${hist.map(p => `<div class="li"><div class="li-main"><div class="li-title">${money(p.amount)}</div><div class="li-sub">${pretty(p.date)}${p.note ? ' · ' + esc(p.note) : ''}</div></div><button class="icon-btn" style="background:var(--surface-2);color:var(--brown-700)" data-a="delPay" data-id="${p.id}" aria-label="Delete payment">${ic('trash', 18)}</button></div>`).join('')}</div>` : ''}
+    ${hist.length ? `<h2 class="sec">Payments</h2><div class="card list">${hist.map(p => `<div class="li"><div class="li-main"><div class="li-title">${money(p.amount)}</div><div class="li-sub">${pretty(p.date)}${p.note ? ' · ' + esc(p.note) : ''}</div>${thumbsRO(p.photos)}</div><button class="icon-btn" style="background:var(--surface-2);color:var(--brown-700)" data-a="delPay" data-id="${p.id}" aria-label="Delete payment">${ic('trash', 18)}</button></div>`).join('')}</div>` : ''}
     ${bills.length ? `<h2 class="sec">Material bought</h2><div class="card list">${bills.map(stockRow).join('')}</div>` : ''}`, form => {
     const fd = new FormData(form), amount = n(fd.get('pAmt')), supplier = String(fd.get('pSup') || '').trim();
     if (!supplier || !amount) return toast('Enter supplier and amount', 'warn');
-    S.payments.push({ id: uid(), supplier, amount, date: fd.get('pDate') || today(), note: String(fd.get('pNote') || '').trim() });
+    S.payments.push({ id: uid(), supplier, amount, date: fd.get('pDate') || today(), note: String(fd.get('pNote') || '').trim(), photos: [...sheetPhotos] });
     save(); render(); paySheet(supplier); toast(`${money(amount)} paid to ${supplier}`);
   });
 }
@@ -1756,13 +1869,14 @@ function diarySheet(k) {
       <div class="fields">
         ${area('dWork', 'Work done', d.work || '', 'e.g. Ground floor slab casting, 2nd coat plaster in kitchen')}
         ${area('dIssues', 'Problems / material needed', d.issues || '', 'e.g. Sand short, need 200 cft by Friday')}
+        ${photoField(d.photos, 'Site photos')}
       </div>
       <button class="btn btn-primary btn-block" type="submit">${ic('check', 18, 2.5)} Save diary</button>
       ${S.diary[k] ? `<button class="btn btn-danger btn-block" type="button" data-a="delDiary" data-d="${k}">${ic('trash', 18)} Delete</button>` : ''}
     </form>`, form => {
     const fd = new FormData(form);
-    const rec = { weather: String(fd.get('dWeather') || ''), work: String(fd.get('dWork') || '').trim(), issues: String(fd.get('dIssues') || '').trim() };
-    if (!rec.work && !rec.issues && !rec.weather) delete S.diary[k]; else S.diary[k] = rec;
+    const rec = { weather: String(fd.get('dWeather') || ''), work: String(fd.get('dWork') || '').trim(), issues: String(fd.get('dIssues') || '').trim(), photos: [...sheetPhotos] };
+    if (!rec.work && !rec.issues && !rec.weather && !rec.photos.length) delete S.diary[k]; else S.diary[k] = rec;
     save(); closeSheet(); render(); toast('Diary saved');
   });
 }
@@ -1899,6 +2013,8 @@ function settingsSheet() {
       try {
         const d = JSON.parse(rd.result);
         if (!d.workers || !d.stock) throw 0;
+        const photos = d.photos || {}; delete d.photos;
+        Promise.all(Object.entries(photos).map(([id, data]) => phPut(id, data))).catch(() => toast('Some photos could not be restored', 'warn'));
         S = { ...emptyData(), ...d }; save(); closeSheet(); render('in'); toast('Backup restored');
       } catch (e) { toast('That file is not a SiteBook backup'); }
     };
@@ -1934,6 +2050,18 @@ function withUndo(msg, change) {
 /* ================= Actions ================= */
 const A = {
   tab: d => { if (ui.tab === d.id && !ui.calc) return; const order = TABS.map(t => t.id); const back = order.indexOf(d.id) < order.indexOf(ui.tab); ui.tab = d.id; if (d.id === 'calc') ui.calc = null; if (navigator.vibrate) navigator.vibrate(6); render(back ? 'back' : 'in'); scrollTo({ top: 0, behavior: 'smooth' }); guardBack(); },
+  viewPhoto: d => openViewer(d.id, !!d.edit),
+  zoomPhoto: () => $('#viewer').classList.toggle('zoom'),
+  closeViewer: () => { if (topLevel && guarded && !sheetOpen()) history.back(); else closeViewer(); },
+  removePhoto: () => { sheetPhotos = sheetPhotos.filter(x => x !== viewer.id); closeViewer(); drawThumbs(); toast('Photo removed. Save to keep the change.'); },
+  sharePhoto: async () => {
+    try {
+      const blob = await (await fetch(await phGet(viewer.id))).blob();
+      const file = new File([blob], 'bill.jpg', { type: 'image/jpeg' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file] });
+      else toast('Sharing photos is not available here', 'warn');
+    } catch (e) { if (!e || e.name !== 'AbortError') toast('Could not share the photo', 'warn'); }
+  },
   undo: () => { const u = toastUndo; toastUndo = null; $('#toast').classList.remove('show'); if (u) u(); },
   toggleBig: () => { const on = document.documentElement.classList.toggle('big'); try { localStorage.setItem('sitebook-big', on ? '1' : '0'); } catch (e) {} render(); settingsSheet(); },
   resetPhoto: () => { $('#photoPreview').src = defaultPhoto; $('#photoData').value = ''; },
@@ -2032,7 +2160,11 @@ const A = {
 
   acc: d => { ui.guideOpen[d.id] = !ui.guideOpen[d.id]; const el = document.querySelector(`[data-acc="${d.id}"]`); el.classList.toggle('open'); el.querySelector('.acc-head').setAttribute('aria-expanded', !!ui.guideOpen[d.id]); },
 
-  export: () => download(`sitebook-backup-${today()}.json`, JSON.stringify(S, null, 2), 'application/json'),
+  export: async () => {
+    const photos = {};
+    for (const id of usedPhotos()) { const d = await phGet(id).catch(() => null); if (d) photos[id] = d; }
+    download(`sitebook-backup-${today()}.json`, JSON.stringify({ ...S, photos }), 'application/json');
+  },
   wipe: () => confirmIn('Everything on this site will be deleted.', 'Delete all', () => { closeSheet(); withUndo('All data deleted', () => { S = { ...emptyData(), brand: S.brand }; }); })
 };
 
@@ -2056,13 +2188,19 @@ document.addEventListener('change', e => {
   const k = e.target.dataset && e.target.dataset.f;
   if (k && ui.calc && e.target.tagName === 'SELECT') { ui.cs[ui.calc].v[k] = e.target.value; updateCalc(true); }
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheetOpen()) { if (topLevel && guarded) history.back(); else closeSheet(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#viewer').hidden) { closeViewer(); return; } if (e.key === 'Escape' && sheetOpen()) { if (topLevel && guarded) history.back(); else closeSheet(); } });
 addEventListener('resize', () => { renderTabs(); layoutSegs(document); });
 
 document.querySelector('.top-inner > .icon-btn[data-a="settings"]').innerHTML = ic('sliders', 20);
 document.querySelector('.sheet-head [data-a="closeSheet"]').innerHTML = ic('x', 20);
+$('#viewerShare').innerHTML = ic('share', 18) + ' Share';
+$('#viewerRemove').innerHTML = ic('trash', 18) + ' Remove';
+$('#viewerClose').innerHTML = ic('check', 18, 2.5) + ' Done';
 render('in');
 connectCloud();
+setTimeout(async () => {
+  try { const keep = new Set([...usedPhotos(), ...sheetPhotos]); for (const id of await phKeys()) if (!keep.has(id)) await phDel(id); } catch (e) {}
+}, 60000);
 </script>
 
 <script>
