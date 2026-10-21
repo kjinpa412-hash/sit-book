@@ -2,17 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="JD Construction">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
+<!-- Launch screen: iPhone 16 Pro Max (440 x 956 pt @3x) -->
+<link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash-1320x2868.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="stylesheet" href="fonts.css">
 <title>Jamyang Dzongsar Construction</title>
-<meta name="theme-color" content="#2B1D14">
+<meta name="theme-color" content="#170F0A">
 <style>
 /* Layout: one phone-width column; dark brown header and tab bar frame a warm sand work area. */
 :root {
@@ -57,7 +59,7 @@ button { cursor: pointer; border: 0; background: none; padding: 0; }
 .num { font-variant-numeric: tabular-nums; }
 [hidden] { display: none !important; }
 
-.shell { max-width: 560px; margin: 0 auto; min-height: 100vh; position: relative; }
+.shell { max-width: 560px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; position: relative; }
 
 /* ---------- Header ---------- */
 .top {
@@ -393,15 +395,215 @@ table.tbl { width: 100%; border-collapse: collapse; font-variant-numeric: tabula
 .sync.ok::before { background: #7BC47F; }
 .sync.busy::before { background: var(--yellow); }
 .sync.err::before { background: #F08A73; }
+
+/* ---------- Diary, expenses, reports ---------- */
+.inp textarea { resize: vertical; min-height: 84px; font-weight: 500; line-height: 1.4; }
+a.btn { text-decoration: none; }
+.diary { display: grid; gap: 10px; }
+.diary-k { font-size: 11.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--brown-500); }
+.diary-v { white-space: pre-wrap; overflow-wrap: anywhere; }
+.rep { display: grid; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--line); }
+.rep:first-child { border-top: 0; }
+.rep-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.share-ic { color: var(--brown-700); }
+@media (min-width: 600px) { .actions.six { grid-template-columns: repeat(3, 1fr); } }
+
+/* ---------- App feel: no zoom, no rubber-band, no accidental text selection ---------- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; overscroll-behavior: none; scroll-behavior: smooth; }
+body { overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input, textarea, select, .diary-v, .selectable { -webkit-user-select: text; user-select: text; }
+img { -webkit-user-drag: none; }
+body.locked { overflow: hidden; }
+.sheet-body { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.sheet.dragging { transition: none; }
+.sheet-grab { padding: 0; }
+.sheet-drag { touch-action: none; cursor: grab; padding-bottom: 2px; }
+
+/* Header collapses a little once the page scrolls */
+.top { transition: box-shadow .3s var(--ease); }
+.top-inner { transition: padding .3s var(--ease); }
+.brand-mark, .top-title { transition: width .3s var(--ease), height .3s var(--ease), font-size .3s var(--ease); }
+.top.scrolled { box-shadow: 0 8px 24px -14px rgba(20,12,6,.8); }
+.top.scrolled .top-inner { padding-top: 9px; padding-bottom: 9px; }
+.top.scrolled .brand-mark { width: 34px; height: 34px; }
+.top.scrolled .top-title { font-size: 18px; }
+.brand-btn { flex: none; border-radius: 50%; display: grid; }
+.brand-btn:active .brand-mark { transform: scale(.92); }
+
+/* Profile in settings */
+.profile { display: grid; justify-items: center; gap: 12px; padding: 4px 0 6px; }
+.profile-photo { position: relative; width: 104px; height: 104px; cursor: pointer; }
+.profile-photo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--yellow); background: var(--surface-2); box-shadow: var(--shadow); }
+.profile-cam { position: absolute; right: 2px; bottom: 2px; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--brown-800); color: var(--yellow); border: 2px solid var(--bg); }
+.profile-btns { display: flex; gap: 8px; }
+
+/* Larger text option (per phone) */
+html.big main, html.big .sheet-body { zoom: 1.12; }
+
+/* Toast with action */
+.toast { pointer-events: none; }
+.toast.show { pointer-events: auto; }
+.toast.warn svg { color: #F08A73; }
+.toast-act { margin-left: 6px; padding: 6px 10px; border-radius: 9px; background: rgba(255,244,223,.12); color: var(--yellow); font-weight: 800; }
+
+/* =====================================================================
+   Dark brown glass theme. Tokens are re-mapped for a dark background:
+   --brown-900 is now the main (cream) text colour, --ink is dark text on gold.
+   ===================================================================== */
+:root {
+  --bg: #170F0A;
+  --bg-2: #22160E;
+  --ink: #24170E;
+  --surface: rgba(255,232,200,.055);
+  --surface-2: rgba(255,232,200,.095);
+  --line: rgba(255,224,182,.12);
+  --glass-edge: rgba(255,230,195,.16);
+  --brown-900: #F6EAD8;
+  --brown-800: #3A2617;
+  --brown-700: #E2CDB1;
+  --brown-500: #B49A7D;
+  --brown-300: #9C8166;
+  --on-dark: #FFF4DF;
+  --yellow: #F5B800;
+  --yellow-deep: #FFC93A;
+  --yellow-soft: rgba(245,184,0,.15);
+  --good: #6CC27A; --good-soft: rgba(108,194,122,.16);
+  --warn: #F0A24E; --warn-soft: rgba(240,162,78,.16);
+  --bad: #F07A63;  --bad-soft: rgba(240,122,99,.15);
+  --blur: blur(18px) saturate(150%);
+  --shadow: 0 1px 0 rgba(255,240,215,.05) inset, 0 12px 30px -16px rgba(0,0,0,.7);
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--brown-900); }
+/* Warm glow behind the glass; a fixed layer so it also works on iPhone */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(70% 45% at 0% 0%, rgba(201,120,42,.30), transparent 70%),
+    radial-gradient(60% 40% at 100% 35%, rgba(245,184,0,.10), transparent 70%),
+    radial-gradient(80% 50% at 50% 105%, rgba(140,70,28,.38), transparent 70%),
+    linear-gradient(180deg, var(--bg-2), var(--bg));
+}
+.card, .stat, .action, .tile, .mat, .inp, .chip, .seg, .banner {
+  background: var(--surface);
+  border-color: var(--line);
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  box-shadow: var(--shadow);
+}
+.inp { box-shadow: none; }
+.inp:focus-within { border-color: var(--yellow); box-shadow: 0 0 0 4px rgba(245,184,0,.16); background: var(--surface-2); }
+.inp input::placeholder, .inp textarea::placeholder { color: var(--brown-300); opacity: .8; }
+select option { background: #2A1B11; color: var(--brown-900); }
+input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.85) sepia(.4); }
+
+/* Header: dark glass with a gold edge */
+.top {
+  background: rgba(23,15,10,.72);
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+}
+.top-sub { color: var(--brown-500); }
+.brand-mark { color: var(--ink); box-shadow: 0 0 0 4px rgba(245,184,0,.12), 0 6px 16px -6px rgba(245,184,0,.5); }
+.tape { height: 4px; opacity: .9; background: repeating-linear-gradient(-45deg, var(--yellow) 0 10px, #120B07 10px 20px); }
+
+/* Gold hero tiles */
+.stat.hero, .tile.feature {
+  background: linear-gradient(145deg, rgba(245,184,0,.24), rgba(140,78,32,.28) 55%, rgba(60,36,20,.35));
+  border: 1px solid rgba(245,184,0,.28); color: var(--on-dark);
+  box-shadow: 0 1px 0 rgba(255,220,150,.15) inset, 0 18px 40px -20px rgba(245,184,0,.45);
+}
+.stat.hero .stat-label, .stat.hero .stat-note, .tile.feature .tile-sub { color: #E5C99F; }
+.stat.hero .stat-val { color: var(--yellow); text-shadow: 0 0 24px rgba(245,184,0,.35); }
+.tile.feature .tile-ic { background: var(--yellow); color: var(--ink); }
+
+/* Buttons */
+.btn-primary { background: linear-gradient(180deg, #FFCB2E, var(--yellow)); color: var(--ink); box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 10px 22px -10px rgba(245,184,0,.75); }
+.btn-primary:active { background: var(--yellow); }
+.btn-dark { background: rgba(255,232,200,.13); color: var(--on-dark); border: 1px solid var(--glass-edge); }
+.btn-soft { background: var(--surface-2); color: var(--brown-700); border: 1px solid var(--line); }
+.btn-ghost { color: var(--yellow-deep); }
+.btn-danger { border: 1px solid rgba(240,122,99,.3); }
+.icon-btn { background: rgba(255,232,200,.08); color: var(--on-dark); border: 1px solid var(--line); }
+.datebar .icon-btn, .sheet-head .icon-btn { background: var(--surface-2); color: var(--on-dark); border-color: var(--line); }
+
+/* Gold accents */
+.action-ic, .empty-ic { background: var(--yellow-soft); color: var(--yellow); }
+.tile-ic { background: var(--yellow-soft); color: var(--yellow); }
+.rule-v { color: var(--brown-900); }
+.chip.on { background: var(--yellow); border-color: var(--yellow); color: var(--ink); box-shadow: 0 8px 18px -10px rgba(245,184,0,.8); }
+.seg-thumb { background: linear-gradient(180deg, #FFCB2E, var(--yellow)); box-shadow: 0 6px 14px -6px rgba(245,184,0,.7); }
+.seg button.on { color: var(--ink); }
+.avatar.P, .avatar.H, .avatar.A, .mk.on.P, .mk.on.H, .mk.on.A { color: var(--ink); }
+.mat-bar i { background: linear-gradient(90deg, var(--yellow-deep), var(--yellow)); box-shadow: 0 0 10px rgba(245,184,0,.5); }
+.mat.on { border-color: var(--yellow); box-shadow: 0 0 0 3px rgba(245,184,0,.18); }
+.action:active, .tile:active { border-color: rgba(245,184,0,.6); }
+h2.sec { color: var(--brown-500); }
+.note { background: var(--surface); border: 1px solid var(--line); }
+
+/* Result panel: deeper glass */
+.result { background: linear-gradient(160deg, rgba(60,38,22,.85), rgba(22,14,9,.92)); border: 1px solid rgba(245,184,0,.22); box-shadow: 0 20px 44px -22px rgba(0,0,0,.9); }
+
+/* Floating glass tab bar */
+.tabbar {
+  left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); padding: 0 6px;
+  max-width: 540px; margin: 0 auto; border-radius: 24px;
+  background: rgba(30,19,12,.72); border: 1px solid var(--glass-edge);
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  box-shadow: 0 1px 0 rgba(255,240,215,.06) inset, 0 18px 40px -12px rgba(0,0,0,.8);
+}
+.tab-ind { box-shadow: 0 6px 16px -6px rgba(245,184,0,.8); }
+.tab.on svg { color: var(--ink); }
+main { padding-bottom: calc(var(--tabbar-h) + 40px + env(safe-area-inset-bottom, 0px)); }
+.toast { bottom: calc(var(--tabbar-h) + 26px + env(safe-area-inset-bottom, 0px)); background: rgba(45,29,18,.9); border: 1px solid var(--glass-edge); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+
+/* Bottom sheet: frosted */
+.backdrop { background: rgba(8,5,3,.55); }
+.sheet {
+  background: rgba(30,20,13,.86); border: 1px solid var(--glass-edge); border-bottom: 0;
+  -webkit-backdrop-filter: blur(26px) saturate(160%); backdrop-filter: blur(26px) saturate(160%);
+  box-shadow: 0 -24px 60px -20px rgba(0,0,0,.9);
+}
+.profile-photo img { border-color: var(--yellow); }
+.profile-cam { border-color: #2A1B11; }
+
+/* Small switch */
+.switch { width: 46px; height: 28px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); position: relative; flex: none; transition: background .3s var(--ease); }
+.switch i { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--brown-700); transition: transform .3s var(--ease), background .3s var(--ease); }
+.switch.on { background: var(--yellow); }
+.switch.on i { transform: translateX(18px); background: var(--ink); }
+
+/* Phones without blur support get solid glass */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card, .stat, .action, .tile, .mat, .chip, .seg { background: #2A1B11; }
+  .sheet { background: #24170F; }
+  .tabbar, .top { background: #1E140D; }
+}
+
+/* Keep every column inside the phone width */
+.view, .sheet-body { grid-template-columns: minmax(0, 1fr); }
+.fields, .stats, .mats, .tiles, .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.inp input, .inp select, .inp textarea { width: 100%; }
+@media (max-width: 360px) { .fields, .stats, .mats { grid-template-columns: minmax(0, 1fr); } }
+@media (min-width: 600px) { .actions { grid-template-columns: repeat(4, minmax(0, 1fr)); } .actions.six { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* iPhone: buttons never flash grey, sheet clears the Dynamic Island */
+.sheet { max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 12px); }
+@media (display-mode: standalone) { .top { padding-top: max(env(safe-area-inset-top, 0px), 20px); } }
+
+/* Readability */
+body { font-size: 15.5px; }
+.li-title { font-size: 15.5px; }
+.li-sub { font-size: 13px; line-height: 1.35; margin-top: 1px; }
+.page-title { font-size: 32px; }
+.diary-v { font-size: 15px; line-height: 1.5; }
 </style>
 </head>
 <body>
 <div class="shell">
   <header class="top">
     <div class="top-inner">
-      <img class="brand-mark" alt="" src="data:image/jpeg;base64,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">
+      <button class="brand-btn" data-a="settings" aria-label="Edit name and photo"><img class="brand-mark" id="brandImg" alt="" src="data:image/jpeg;base64,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"></button>
       <div class="top-text">
-        <div class="top-title">Jamyang Dzongsar Construction</div>
+        <div class="top-title" id="brandName">Jamyang Dzongsar Construction</div>
         <div class="top-sub"><span id="siteTitle"></span> · <span id="topSub"></span> · <span id="sync" class="sync">Saved on this phone</span></div>
       </div>
       <button class="icon-btn" data-a="settings" aria-label="Site settings"></button>
@@ -420,11 +622,11 @@ table.tbl { width: 100%; border-collapse: collapse; font-variant-numeric: tabula
 
 <div class="backdrop" id="backdrop" data-a="closeSheet"></div>
 <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-  <div class="sheet-grab" aria-hidden="true"></div>
+  <div class="sheet-drag" id="sheetDrag"><div class="sheet-grab" aria-hidden="true"></div>
   <div class="sheet-head">
     <div class="sheet-title" id="sheetTitle"></div>
     <button class="icon-btn" data-a="closeSheet" aria-label="Close"></button>
-  </div>
+  </div></div>
   <div class="sheet-body" id="sheetBody"></div>
 </section>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -454,7 +656,15 @@ const P = {
   brick: '<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9.3h18M3 14.7h18M9 4v5.3M15 9.3v5.4M9 14.7V20"/>',
   layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
   wallet: '<rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M3 10h18"/><path d="M16 15h2"/><path d="M6 6l9-3 1 3"/>',
-  ruler: '<path d="M3 17 17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/>'
+  ruler: '<path d="M3 17 17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/>',
+  share: '<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/>',
+  file: '<path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/><path d="M8.5 13h7M8.5 17h5"/>',
+  note: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  phone: '<path d="M5 3.5h3.5l1.8 4.5-2.3 1.4a11 11 0 0 0 5.6 5.6l1.4-2.3 4.5 1.8V18a2.5 2.5 0 0 1-2.5 2.5A15.5 15.5 0 0 1 2.5 6 2.5 2.5 0 0 1 5 3.5z"/>',
+  camera: '<path d="M3.5 8.5A1.5 1.5 0 0 1 5 7h2.5L9 4.5h6L16.5 7H19a1.5 1.5 0 0 1 1.5 1.5v10A1.5 1.5 0 0 1 19 20H5a1.5 1.5 0 0 1-1.5-1.5z"/><circle cx="12" cy="13" r="3.5"/>',
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  text: '<path d="M4 7V5h11v2M9.5 5v14M7 19h5"/><path d="M14 12v-1.5h7V12M17.5 10.5V19M16 19h3"/>',
+  truck: '<path d="M2.5 6h11v10h-11z"/><path d="M13.5 9.5h4l3 3.5V16h-7"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>'
 };
 const ic = (n, s = 22, w = 2) =>
   `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
@@ -513,6 +723,8 @@ const DEFAULT_MATS = [
   { id: 'gitti', name: 'Gitti', unit: 'cft' },
   { id: 'bricks', name: 'Bricks', unit: 'nos' }
 ];
+const EXP_CATS = ['Transport', 'Tea & food', 'Tools & hardware', 'Machine / JCB', 'Water & electricity', 'Shuttering hire', 'Contract work', 'Other'];
+const WEATHER = ['Sunny', 'Cloudy', 'Rain', 'Very hot', 'Cold', 'Windy'];
 
 function sampleData() {
   const t = today(), y = shift(t, -1), y2 = shift(t, -2);
@@ -534,37 +746,50 @@ function sampleData() {
     advances: [{ id: 'a1', workerId: 'w2', date: y, amount: 1000, note: 'Cash' }],
     materials: DEFAULT_MATS.map(m => ({ ...m })),
     stock: [
-      { id: 's1', mat: 'cement', date: y2, kind: 'in', qty: 100, rate: 390, note: 'Shree Cement' },
-      { id: 's2', mat: 'sariya', date: y2, kind: 'in', qty: 1500, rate: 66, note: 'Fe500, 12 mm + 8 mm' },
-      { id: 's3', mat: 'sand', date: y, kind: 'in', qty: 400, rate: 55, note: '' },
+      { id: 's1', mat: 'cement', date: y2, kind: 'in', qty: 100, rate: 390, supplier: 'Gupta Traders', note: 'Shree Cement · bill 214' },
+      { id: 's2', mat: 'sariya', date: y2, kind: 'in', qty: 1500, rate: 66, supplier: 'Singh Steel', note: 'Fe500, 12 mm + 8 mm' },
+      { id: 's3', mat: 'sand', date: y, kind: 'in', qty: 400, rate: 55, supplier: 'Gupta Traders', note: '' },
       { id: 's4', mat: 'cement', date: y, kind: 'out', qty: 22, rate: 0, note: 'Footing PCC' },
       { id: 's5', mat: 'sariya', date: t, kind: 'out', qty: 380, rate: 0, note: 'Column cage' }
     ],
-    areas: []
+    areas: [],
+    expenses: [
+      { id: 'e1', date: y2, cat: 'Transport', amount: 1200, note: 'Tractor, sand trip' },
+      { id: 'e2', date: y, cat: 'Tea & food', amount: 240, note: '' }
+    ],
+    payments: [{ id: 'p1', date: y, supplier: 'Gupta Traders', amount: 30000, note: 'UPI' }],
+    diary: { [y]: { weather: 'Sunny', work: 'Column cage tied for C1–C4.\nFooting PCC curing.', issues: '8 mm rings short, ordered more.' } }
   };
 }
 function emptyData() {
-  return { sample: false, siteName: 'My Site', workers: [], attendance: {}, advances: [], materials: DEFAULT_MATS.map(m => ({ ...m })), stock: [], areas: [] };
+  return { sample: false, brand: {}, siteName: 'My Site', workers: [], attendance: {}, advances: [], materials: DEFAULT_MATS.map(m => ({ ...m })), stock: [], areas: [], expenses: [], payments: [], diary: {} };
 }
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
 if (!S || !S.workers) S = sampleData();
-S.areas = S.areas || [];
+S = { ...emptyData(), ...S };
 
 /* Saving: always to this browser; when opened through the claude.ai link, also to the
    owner's private online store (data/users/<id>/…), split so no document grows too big:
    core (workers, materials), stock, advances, and one attendance document per month. */
 let cloud = null, saveT, writing = false, dirty = false, syncState = 'local';
 const written = {};
+function byMonthOf(days) {
+  const out = {};
+  for (const [k, v] of Object.entries(days)) (out[k.slice(0, 7)] = out[k.slice(0, 7)] || {})[k] = v;
+  return out;
+}
 function splitDocs(d) {
-  const byMonth = {};
-  for (const [k, v] of Object.entries(d.attendance)) (byMonth[k.slice(0, 7)] = byMonth[k.slice(0, 7)] || {})[k] = v;
+  const att = byMonthOf(d.attendance), diary = byMonthOf(d.diary);
   const docs = {
-    core: { sample: !!d.sample, siteName: d.siteName, workers: d.workers, materials: d.materials, areas: d.areas, months: Object.keys(byMonth).sort() },
+    core: { sample: !!d.sample, brand: d.brand || {}, siteName: d.siteName, workers: d.workers, materials: d.materials, areas: d.areas, months: Object.keys(att).sort(), diaryMonths: Object.keys(diary).sort() },
     stock: { items: d.stock },
-    advances: { items: d.advances }
+    advances: { items: d.advances },
+    expenses: { items: d.expenses },
+    payments: { items: d.payments }
   };
-  for (const [m, days] of Object.entries(byMonth)) docs['att-' + m] = { days };
+  for (const [m, days] of Object.entries(att)) docs['att-' + m] = { days };
+  for (const [m, days] of Object.entries(diary)) docs['diary-' + m] = { days };
   return docs;
 }
 function setSync(s) {
@@ -606,15 +831,18 @@ async function connectCloud() {
     const core = await col.doc('core').get();
     if (core.exists) {
       const c = core.data();
-      const [stock, adv, ...months] = await Promise.all([col.doc('stock').get(), col.doc('advances').get(), ...(c.months || []).map(m => col.doc('att-' + m).get())]);
-      const attendance = {};
-      months.forEach((s, i) => { if (s.exists) { Object.assign(attendance, s.data().days || {}); written['att-' + c.months[i]] = JSON.stringify(s.data()); } });
+      const lists = ['stock', 'advances', 'expenses', 'payments'];
+      const monthDocs = [...(c.months || []).map(m => 'att-' + m), ...(c.diaryMonths || []).map(m => 'diary-' + m)];
+      const snaps = await Promise.all([...lists, ...monthDocs].map(name => col.doc(name).get()));
+      const got = {};
+      [...lists, ...monthDocs].forEach((name, i) => { if (snaps[i].exists) { got[name] = snaps[i].data(); written[name] = JSON.stringify(got[name]); } });
       written.core = JSON.stringify(c);
-      if (stock.exists) written.stock = JSON.stringify(stock.data());
-      if (adv.exists) written.advances = JSON.stringify(adv.data());
+      const attendance = {}, diary = {};
+      for (const name of monthDocs) if (got[name]) Object.assign(name.startsWith('att-') ? attendance : diary, got[name].days || {});
+      const items = name => (got[name] && got[name].items) || [];
       S = JSON.parse(JSON.stringify({
-        ...emptyData(), sample: !!c.sample, siteName: c.siteName, workers: c.workers || [], materials: c.materials || emptyData().materials, areas: c.areas || [],
-        attendance, stock: stock.exists ? stock.data().items || [] : [], advances: adv.exists ? adv.data().items || [] : []
+        ...emptyData(), sample: !!c.sample, brand: c.brand || {}, siteName: c.siteName, workers: c.workers || [], materials: c.materials || emptyData().materials, areas: c.areas || [],
+        attendance, diary, stock: items('stock'), advances: items('advances'), expenses: items('expenses'), payments: items('payments')
       }));
       cloud = col;
       try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
@@ -649,6 +877,16 @@ function dayWages(k) {
 }
 function monthWages(m) { return S.workers.reduce((s, w) => s + monthOf(w, m).earned, 0); }
 function monthMaterialSpend(m) { return S.stock.filter(e => e.kind === 'in' && e.date.startsWith(m)).reduce((s, e) => s + e.qty * (e.rate || 0), 0); }
+function monthExpenses(m) { return S.expenses.filter(e => e.date.startsWith(m)).reduce((s, e) => s + e.amount, 0); }
+// Suppliers come from the name on material deliveries and on payments; due = bought − paid.
+function suppliers() {
+  const map = {};
+  const get = name => map[name.toLowerCase()] = map[name.toLowerCase()] || { name, bought: 0, paid: 0, last: '' };
+  S.stock.forEach(e => { if (e.kind === 'in' && e.supplier) { const s = get(e.supplier); s.bought += e.qty * (e.rate || 0); if (e.date > s.last) s.last = e.date; } });
+  S.payments.forEach(p => { const s = get(p.supplier); s.paid += p.amount; if (p.date > s.last) s.last = p.date; });
+  return Object.values(map).map(s => ({ ...s, due: s.bought - s.paid })).sort((a, b) => b.due - a.due || a.name.localeCompare(b.name));
+}
+const sameSupplier = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
 
 /* ================= UI state ================= */
 const TABS = [
@@ -658,10 +896,20 @@ const TABS = [
   { id: 'stock', label: 'Stock', icon: 'box' },
   { id: 'guide', label: 'Guide', icon: 'book' }
 ];
-const ui = { tab: 'home', attDate: today(), attView: 'day', month: today().slice(0, 7), calc: null, cs: {}, stockMat: 'all', guideOpen: { col: true } };
+const ui = { tab: 'home', attDate: today(), attView: 'day', month: today().slice(0, 7), calc: null, cs: {}, stockMat: 'all', stockView: 'mat', guideOpen: { col: true } };
 
 /* ================= Rendering ================= */
+const DEFAULT_BRAND = 'Jamyang Dzongsar Construction';
+let defaultPhoto;
+function renderBrand() {
+  const img = $('#brandImg');
+  defaultPhoto = defaultPhoto || img.src;
+  img.src = (S.brand && S.brand.photo) || defaultPhoto;
+  $('#brandName').textContent = (S.brand && S.brand.name) || DEFAULT_BRAND;
+  document.title = (S.brand && S.brand.name) || DEFAULT_BRAND;
+}
 function render(anim) {
+  renderBrand();
   $('#siteTitle').textContent = S.siteName || 'My Site';
   $('#topSub').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
   setSync(syncState);
@@ -712,17 +960,24 @@ VIEWS.home = () => {
     <div class="stat hero"><div class="stat-label">On site today</div><div class="stat-val">${present}<span style="font-size:18px;color:var(--brown-300)"> / ${ws.length}</span></div><div class="stat-note">workers present</div></div>
     <div class="stat"><div class="stat-label">Today's wages</div><div class="stat-val">${money(dayWages(t))}</div><div class="stat-note">from hajri</div></div>
     <div class="stat"><div class="stat-label">Wages · ${pkey(t).toLocaleDateString('en-IN', { month: 'short' })}</div><div class="stat-val">${money(monthWages(m))}</div><div class="stat-note">this month</div></div>
-    <div class="stat"><div class="stat-label">Material bought</div><div class="stat-val">${money(monthMaterialSpend(m))}</div><div class="stat-note">this month</div></div>
+    <div class="stat"><div class="stat-label">Spent · ${pkey(t).toLocaleDateString('en-IN', { month: 'short' })}</div><div class="stat-val">${money(monthMaterialSpend(m) + monthExpenses(m))}</div><div class="stat-note">material ${money(monthMaterialSpend(m))} · other ${money(monthExpenses(m))}</div></div>
   </div>
 
   <div class="stack">
     <h2 class="sec">Quick actions</h2>
-    <div class="actions">
+    <div class="actions six">
       <button class="action" data-a="go" data-tab="att"><span class="action-ic">${ic('users')}</span><span><b>Mark hajri</b><span>Today's attendance</span></span></button>
-      <button class="action" data-a="openCalc" data-id="steel"><span class="action-ic">${ic('steel')}</span><span><b>Sariya</b><span>Steel in kg</span></span></button>
-      <button class="action" data-a="openCalc" data-id="concrete"><span class="action-ic">${ic('mix')}</span><span><b>Cement</b><span>Bags, sand, gitti</span></span></button>
       <button class="action" data-a="stockSheet" data-kind="in"><span class="action-ic">${ic('arrIn')}</span><span><b>Material in</b><span>Record a delivery</span></span></button>
+      <button class="action" data-a="expenseSheet"><span class="action-ic">${ic('wallet')}</span><span><b>Expense</b><span>Transport, tea, tools</span></span></button>
+      <button class="action" data-a="diarySheet" data-d="${t}"><span class="action-ic">${ic('note')}</span><span><b>Site diary</b><span>Today's work & issues</span></span></button>
+      <button class="action" data-a="openCalc" data-id="steel"><span class="action-ic">${ic('steel')}</span><span><b>Sariya</b><span>Steel in kg</span></span></button>
+      <button class="action" data-a="reportsSheet"><span class="action-ic">${ic('file')}</span><span><b>Reports</b><span>WhatsApp & Excel</span></span></button>
     </div>
+  </div>
+
+  <div class="stack">
+    <h2 class="sec">Today's diary ${S.diary[t] ? `<button class="btn btn-ghost" data-a="shareDay" data-d="${t}">${ic('share', 16)} Share</button>` : ''}</h2>
+    ${diaryCard(t)}
   </div>
 
   <div class="stack">
@@ -761,7 +1016,21 @@ function attDay() {
   </div>
   ${ws.length ? `
   ${unmarked ? `<button class="btn btn-dark btn-block" data-a="allPresent">${ic('check', 18, 2.5)} Mark remaining ${unmarked} present</button>` : ''}
-  <div class="card">${ws.map(w => workerRow(w, marks[w.id])).join('')}</div>` : emptyWorkers()}`;
+  <div class="card">${ws.map(w => workerRow(w, marks[w.id])).join('')}</div>` : emptyWorkers()}
+  <div class="stack">
+    <h2 class="sec">Site diary <button class="btn btn-ghost" data-a="shareDay" data-d="${k}">${ic('share', 16)} Share day</button></h2>
+    ${diaryCard(k)}
+  </div>`;
+}
+function diaryCard(k) {
+  const d = S.diary[k];
+  if (!d) return `<button class="card action" style="width:100%" data-a="diarySheet" data-d="${k}"><span class="action-ic">${ic('note')}</span><span><b>Write the day's report</b><span>Work done, weather, problems on site</span></span></button>`;
+  const part = (label, v) => v ? `<div><div class="diary-k">${label}</div><div class="diary-v">${esc(v)}</div></div>` : '';
+  return `<button class="card pad diary" style="width:100%;text-align:left" data-a="diarySheet" data-d="${k}">
+    ${d.weather ? `<div><span class="pill neutral">${esc(d.weather)}</span></div>` : ''}
+    ${part('Work done', d.work)}${part('Problems / needed', d.issues)}
+    <div class="small" style="color:var(--yellow-deep);font-weight:700">Tap to edit</div>
+  </button>`;
 }
 function workerRow(w, m) {
   const s = m ? m.s : '';
@@ -796,6 +1065,10 @@ function attMonth() {
     <div class="stat hero"><div class="stat-label">Still to pay</div><div class="stat-val">${money(tot.bal)}</div><div class="stat-note">after advances</div></div>
     <div class="stat"><div class="stat-label">Earned</div><div class="stat-val">${money(tot.earned)}</div><div class="stat-note">Advance paid ${money(tot.adv)}</div></div>
   </div>
+  ${S.workers.length ? `<div class="row">
+    <button class="btn btn-soft grow" data-a="rep" data-r="pay" data-how="share">${ic('share', 18)} Share pay list</button>
+    <button class="btn btn-soft grow" data-a="rep" data-r="register" data-how="csv">${ic('file', 18)} Hajri in Excel</button>
+  </div>` : ''}
   ${S.workers.length ? `<div class="card list">${rows.map(r => `
     <button class="li" data-a="workerSheet" data-id="${r.w.id}">
       <div class="avatar">${esc(initials(r.w.name))}</div>
@@ -819,15 +1092,64 @@ function stockRow(e) {
   const m = matById(e.mat);
   return `<button class="li" data-a="stockEdit" data-id="${e.id}">
     <span class="dot ${e.kind}">${ic(e.kind === 'in' ? 'arrIn' : 'arrOut', 18)}</span>
-    <div class="li-main"><div class="li-title">${esc(m.name)} ${e.kind === 'in' ? 'received' : 'used'}</div><div class="li-sub">${pretty(e.date)}${e.note ? ' · ' + esc(e.note) : ''}</div></div>
+    <div class="li-main"><div class="li-title">${esc(m.name)} ${e.kind === 'in' ? 'received' : 'used'}</div><div class="li-sub">${pretty(e.date)}${e.supplier ? ' · ' + esc(e.supplier) : ''}${e.note ? ' · ' + esc(e.note) : ''}</div></div>
     <div class="li-end"><b>${e.kind === 'in' ? '+' : '−'}${fmt(e.qty)} ${esc(m.unit)}</b>${e.kind === 'in' && e.rate ? `<div class="li-sub">${money(e.qty * e.rate)}</div>` : ''}</div>
   </button>`;
 }
-VIEWS.stock = () => {
+VIEWS.stock = () => `
+  <div class="row between"><h1 class="page-title">Stock & kharcha</h1>${ui.stockView === 'mat' ? `<button class="btn btn-ghost btn-sm" data-a="matSheet">${ic('plus', 18)} Material</button>` : ''}</div>
+  ${seg('stockView', [['mat', 'Material'], ['exp', 'Expenses'], ['sup', 'Suppliers']], ui.stockView)}
+  ${{ mat: stockMat, exp: stockExp, sup: stockSup }[ui.stockView]()}`;
+
+function monthBar(sub) {
+  return `<div class="datebar">
+    <button class="icon-btn" data-a="month" data-d="-1" aria-label="Previous month">${ic('left')}</button>
+    <div class="when"><div class="when-big">${monthName(ui.month)}</div><div class="when-small">${sub}</div></div>
+    <button class="icon-btn" data-a="month" data-d="1" aria-label="Next month">${ic('right')}</button>
+  </div>`;
+}
+function stockExp() {
+  const m = ui.month;
+  const list = S.expenses.filter(e => e.date.startsWith(m)).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  const byCat = {};
+  list.forEach(e => byCat[e.cat] = (byCat[e.cat] || 0) + e.amount);
+  const other = monthExpenses(m), total = other + monthMaterialSpend(m) + monthWages(m);
+  return `
+  ${monthBar('Every rupee spent on site, apart from material')}
+  <div class="stats">
+    <div class="stat hero"><div class="stat-label">Other expenses</div><div class="stat-val">${money(other)}</div><div class="stat-note">${list.length} entries</div></div>
+    <div class="stat"><div class="stat-label">Whole site cost</div><div class="stat-val">${money(total)}</div><div class="stat-note">wages + material + other</div></div>
+  </div>
+  <div class="row">
+    <button class="btn btn-primary grow" data-a="expenseSheet">${ic('plus', 18, 2.5)} Add expense</button>
+    <button class="btn btn-soft" data-a="rep" data-r="exp" data-how="share" aria-label="Share expenses">${ic('share', 18)}</button>
+  </div>
+  ${Object.keys(byCat).length ? `<div class="card pad">${Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([c, v]) => `<div class="rule"><div class="rule-k">${esc(c)}</div><div class="rule-v num">${money(v)}</div></div>`).join('')}</div>` : ''}
+  <div class="card list">${list.length ? list.map(e => `<button class="li" data-a="expenseSheet" data-id="${e.id}">
+      <span class="dot out">${ic('wallet', 18)}</span>
+      <div class="li-main"><div class="li-title">${esc(e.cat)}</div><div class="li-sub">${pretty(e.date)}${e.note ? ' · ' + esc(e.note) : ''}</div></div>
+      <div class="li-end"><b>${money(e.amount)}</b></div></button>`).join('')
+    : `<div class="empty"><div class="empty-ic">${ic('wallet', 26)}</div><b>No expenses this month</b><div class="muted small">Note transport, tea, tools, JCB and other cash spent, so you know the real cost of the site.</div></div>`}</div>`;
+}
+function stockSup() {
+  const list = suppliers();
+  const due = list.reduce((s, x) => s + Math.max(0, x.due), 0);
+  return `
+  <div class="stats">
+    <div class="stat hero"><div class="stat-label">Total due</div><div class="stat-val">${money(due)}</div><div class="stat-note">to ${list.filter(x => x.due > 0).length} suppliers</div></div>
+    <div class="stat"><div class="stat-label">Paid so far</div><div class="stat-val">${money(list.reduce((s, x) => s + x.paid, 0))}</div><div class="stat-note">of ${money(list.reduce((s, x) => s + x.bought, 0))} bought</div></div>
+  </div>
+  <button class="btn btn-primary btn-block" data-a="paySheet">${ic('wallet', 18)} Pay a supplier</button>
+  <div class="card list">${list.length ? list.map(s => `<button class="li" data-a="paySheet" data-s="${esc(s.name)}">
+      <span class="dot ${s.due > 0 ? 'out' : 'in'}">${ic('truck', 18)}</span>
+      <div class="li-main"><div class="li-title">${esc(s.name)}</div><div class="li-sub num">bought ${money(s.bought)} · paid ${money(s.paid)}</div></div>
+      <div class="li-end"><b>${money(Math.abs(s.due))}</b><div class="li-sub">${s.due > 0 ? 'due' : s.due < 0 ? 'paid extra' : 'clear'}</div></div></button>`).join('')
+    : `<div class="empty"><div class="empty-ic">${ic('truck', 26)}</div><b>No suppliers yet</b><div class="muted small">Write the supplier's name when you record material received. Their bill and your payments show up here.</div></div>`}</div>`;
+}
+function stockMat() {
   const list = [...S.stock].filter(e => ui.stockMat === 'all' || e.mat === ui.stockMat).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
   const m = ui.month;
   return `
-  <div class="row between"><h1 class="page-title">Stock</h1><button class="btn btn-ghost btn-sm" data-a="matSheet">${ic('plus', 18)} Material</button></div>
   <div class="row">
     <button class="btn btn-primary grow" data-a="stockSheet" data-kind="in">${ic('arrIn', 18)} Received</button>
     <button class="btn btn-dark grow" data-a="stockSheet" data-kind="out">${ic('arrOut', 18)} Used</button>
@@ -838,7 +1160,7 @@ VIEWS.stock = () => {
       ${ui.stockMat !== 'all' ? `<button class="btn btn-ghost" data-a="pickMat" data-id="all">Show all</button>` : `<span class="num" style="letter-spacing:0;text-transform:none">${money(monthMaterialSpend(m))} bought in ${pkey(m + '-01').toLocaleDateString('en-IN', { month: 'short' })}</span>`}</h2>
     <div class="card list">${list.length ? list.map(stockRow).join('') : `<div class="empty"><div class="empty-ic">${ic('box', 26)}</div><b>No entries</b><div class="muted small">Record each delivery with its rate, and each day's use. The balance updates by itself.</div></div>`}</div>
   </div>`;
-};
+}
 
 /* ---------- Calculators ---------- */
 const CALCS = {
@@ -872,13 +1194,14 @@ const EL = {
     rect: { label: 'Rectangle', fields: [['l', 'len', 'Length', 30], ['w', 'len', 'Width', 40]] },
     tri: { label: 'Triangle', fields: [['b', 'len', 'Base', 30], ['h', 'len', 'Height', 20]] },
     trap: { label: 'Uneven plot', fields: [['a', 'len', 'Front side', 30], ['c', 'len', 'Back side', 34], ['h', 'len', 'Depth', 50]] },
+    lshape: { label: 'L-shape', fields: [['l1', 'len', 'Part 1 length', 30], ['w1', 'len', 'Part 1 width', 20], ['l2', 'len', 'Part 2 length', 15], ['w2', 'len', 'Part 2 width', 10]] },
     circle: { label: 'Circle', fields: [['d', 'len', 'Diameter', 10]] }
   },
   brick: {
     wall: { label: 'Wall', fields: [['l', 'len', 'Wall length', 40], ['h', 'len', 'Wall height', 10], ['doors', 'cnt', 'Doors (3×7 ft)', 1], ['wins', 'cnt', 'Windows (4×4 ft)', 2]] }
   },
   plaster: {
-    wall: { label: 'Wall', fields: [['l', 'len', 'Length', 40], ['h', 'len', 'Height', 10]] }
+    wall: { label: 'Wall', fields: [['l', 'len', 'Length', 40], ['h', 'len', 'Height', 10], ['doors', 'cnt', 'Doors (3×7 ft)', 0], ['wins', 'cnt', 'Windows (4×4 ft)', 0]] }
   }
 };
 const QUICK_KG = { slab: [90, 'Slab · 80–100 kg/m³'], beam: [140, 'Beam · 120–160 kg/m³'], column: [180, 'Column · 160–200 kg/m³'], footing: [80, 'Footing · 70–90 kg/m³'] };
@@ -1014,11 +1337,11 @@ function calcResult(id, cs) {
     };
   }
   if (id === 'area') {
-    const m2 = { rect: f.l * f.w, tri: f.b * f.h / 2, trap: (f.a + f.c) / 2 * f.h, circle: Math.PI * f.d * f.d / 4 }[cs.el];
+    const m2 = { rect: f.l * f.w, lshape: f.l1 * f.w1 + f.l2 * f.w2, tri: f.b * f.h / 2, trap: (f.a + f.c) / 2 * f.h, circle: Math.PI * f.d * f.d / 4 }[cs.el];
     const listTotal = S.areas.reduce((s, a) => s + a.m2, 0);
     return {
       label: 'Area', big: imp ? fmt(m2 * SQFT, 1) : fmt(m2, 2), unit: imp ? 'sq ft' : 'sq m',
-      rows: [[imp ? 'Sq m' : 'Sq ft', imp ? fmt(m2, 2) : fmt(m2 * SQFT, 1), ''], ['Gaj / sq yd', fmt(m2 * 1.19599, 1), ''], ['Marla', fmt(m2 * SQFT / 272.25, 2), '272.25 sq ft'], ['Acre', fmt(m2 / 4046.86, 4), '']],
+      rows: [[imp ? 'Sq m' : 'Sq ft', imp ? fmt(m2, 2) : fmt(m2 * SQFT, 1), ''], ['Gaj / sq yd', fmt(m2 * 1.19599, 1), ''], ['Marla', fmt(m2 * SQFT / 272.25, 2), '272.25 sq ft'], ['Kanal', fmt(m2 * SQFT / 5445, 3), '20 marla'], ['Cent', fmt(m2 * SQFT / 435.6, 2), '435.6 sq ft'], ['Acre', fmt(m2 / 4046.86, 4), '']],
       area: m2,
       after: S.areas.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Saved</th><th class="r">Sq ft</th><th class="r">Sq m</th><th></th></tr></thead><tbody>
         ${S.areas.map(a => `<tr><td>${esc(a.name)}</td><td class="r">${fmt(a.m2 * SQFT, 1)}</td><td class="r">${fmt(a.m2, 2)}</td><td class="r"><button class="btn-ghost" data-a="delArea" data-id="${a.id}" aria-label="Remove ${esc(a.name)}">${ic('x', 16)}</button></td></tr>`).join('')}
@@ -1042,7 +1365,7 @@ function calcResult(id, cs) {
     };
   }
   if (id === 'plaster') {
-    const area = f.l * f.h * cs.sides;
+    const area = Math.max(0, f.l * f.h - n(cs.v.doors) * 21 / SQFT - n(cs.v.wins) * 16 / SQFT) * cs.sides;
     const wet = area * cs.thick / 1000;
     const dry = wet * 1.33 * 1.2;
     const bags = dry / (1 + cs.mix) / BAG_M3;
@@ -1174,17 +1497,116 @@ function openSheet(title, body, onSubmit) {
   $('#sheetTitle').textContent = title;
   $('#sheetBody').innerHTML = body;
   sheetSubmit = onSubmit;
+  const sh = $('#sheet');
+  sh.style.transform = '';
   $('#backdrop').classList.add('show');
-  $('#sheet').classList.add('show');
+  sh.classList.add('show');
+  document.body.classList.add('locked');
+  $('#sheetBody').scrollTop = 0;
   layoutSegs($('#sheetBody'));
+  guardBack();
   const first = $('#sheetBody').querySelector('input:not([type=hidden])');
   if (first && matchMedia('(pointer:fine)').matches) setTimeout(() => first.focus(), 350);
 }
+const sheetOpen = () => $('#sheet').classList.contains('show');
 function closeSheet() {
+  const sh = $('#sheet');
+  sh.style.transform = '';
   $('#backdrop').classList.remove('show');
-  $('#sheet').classList.remove('show');
+  sh.classList.remove('show');
+  document.body.classList.remove('locked');
+  if (document.activeElement && sh.contains(document.activeElement)) document.activeElement.blur();
   sheetSubmit = null;
 }
+
+/* Photo: centre-crop to a small square JPEG so it stays light to save and sync. */
+function squarePhoto(file, size) {
+  return new Promise((ok, fail) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const s = Math.min(img.naturalWidth, img.naturalHeight), c = document.createElement('canvas');
+      c.width = c.height = size;
+      c.getContext('2d').drawImage(img, (img.naturalWidth - s) / 2, (img.naturalHeight - s) / 2, s, s, 0, 0, size, size);
+      URL.revokeObjectURL(url); ok(c.toDataURL('image/jpeg', .85));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); fail(); };
+    img.src = url;
+  });
+}
+
+/* Phone back button: closes the sheet, then the calculator, then returns Home, before leaving the app.
+   Only when the app runs on its own (installed or opened directly), not inside another page. */
+let topLevel = false;
+try { topLevel = window.top === window; } catch (e) {}
+let guarded = false;
+function backDepth() { return sheetOpen() || ui.calc || ui.tab !== 'home'; }
+function guardBack() { if (topLevel && !guarded && backDepth()) { history.pushState({ guard: 1 }, ''); guarded = true; } }
+addEventListener('popstate', () => {
+  guarded = false;
+  if (sheetOpen()) closeSheet();
+  else if (ui.calc) A.closeCalc();
+  else if (ui.tab !== 'home') A.tab({ id: 'home' });
+  guardBack();
+});
+
+/* Swipe the sheet down to close it */
+(() => {
+  const sh = $('#sheet'), body = $('#sheetBody');
+  let y0 = null, dy = 0, t0 = 0;
+  const start = e => {
+    if (e.target.closest('input, textarea, select')) return;
+    if (!e.target.closest('#sheetDrag') && body.scrollTop > 0) return;
+    y0 = e.touches[0].clientY; dy = 0; t0 = Date.now();
+  };
+  const move = e => {
+    if (y0 === null) return;
+    dy = e.touches[0].clientY - y0;
+    if (dy <= 0) { sh.classList.remove('dragging'); sh.style.transform = ''; return; }
+    if (e.cancelable) e.preventDefault();
+    sh.classList.add('dragging');
+    sh.style.transform = `translateY(${dy}px)`;
+    $('#backdrop').style.opacity = String(Math.max(0, 1 - dy / 400));
+  };
+  const end = () => {
+    if (y0 === null) return;
+    y0 = null; sh.classList.remove('dragging'); $('#backdrop').style.opacity = '';
+    if (dy > 110 || (dy > 40 && dy / (Date.now() - t0) > .5)) { if (topLevel && guarded) history.back(); else closeSheet(); }
+    else sh.style.transform = '';
+  };
+  sh.addEventListener('touchstart', start, { passive: true });
+  sh.addEventListener('touchmove', move, { passive: false });
+  sh.addEventListener('touchend', end); sh.addEventListener('touchcancel', end);
+})();
+
+/* Swipe left/right on the daily hajri to change the day */
+(() => {
+  let x0 = null, y0 = 0;
+  const v = $('#view');
+  v.addEventListener('touchstart', e => {
+    x0 = ui.tab === 'att' && ui.attView === 'day' && !e.target.closest('.chips, .tbl-wrap, input, textarea') ? e.touches[0].clientX : null;
+    y0 = e.touches[0].clientY;
+  }, { passive: true });
+  v.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    x0 = null;
+    if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.8) A.attDay({ d: dx > 0 ? -1 : 1 });
+  }, { passive: true });
+})();
+
+/* No pinch zoom on iPhone (Safari ignores user-scalable=no) */
+['gesturestart', 'gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+let lastTouch = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTouch < 300 && !e.target.closest('input, textarea, select')) e.preventDefault();
+  lastTouch = now;
+}, { passive: false });
+
+addEventListener('scroll', () => $('.top').classList.toggle('scrolled', scrollY > 8), { passive: true });
+
+/* Larger text, remembered on this phone */
+try { if (localStorage.getItem('sitebook-big') === '1') document.documentElement.classList.add('big'); } catch (e) {}
 const fld = (id, label, value = '', attrs = '', unit = '', full = true) =>
   `<div class="field ${full ? 'full' : ''}"><label for="${id}">${label}</label><div class="inp"><input id="${id}" name="${id}" value="${esc(value)}" ${attrs}>${unit ? `<span class="unit">${unit}</span>` : ''}</div></div>`;
 const sel = (id, label, opts, value, full = true) =>
@@ -1202,10 +1624,11 @@ function workerSheet(id) {
       <div class="stat hero"><div class="stat-label">To pay · ${pkey(m + '-01').toLocaleDateString('en-IN', { month: 'short' })}</div><div class="stat-val">${money(r.bal)}</div><div class="stat-note">${fmt(r.days)} days${r.ot ? ` · ${r.ot}h OT` : ''}</div></div>
       <div class="stat"><div class="stat-label">Earned</div><div class="stat-val">${money(r.earned)}</div><div class="stat-note">Advance ${money(r.adv)}</div></div>
     </div>
+    ${w.phone ? `<a class="btn btn-soft btn-block" href="tel:${esc(w.phone.replace(/[^\d+]/g, ''))}">${ic('phone', 18)} Call ${esc(w.name.split(' ')[0])}</a>` : ''}
     <form class="card pad stack" data-form="advance">
-      <h2 class="sec">Give advance</h2>
+      <h2 class="sec">Advance / payment ${r.bal > 0 ? `<button type="button" class="btn btn-ghost" data-a="fillPay" data-v="${Math.round(r.bal)}">Pay full ${money(r.bal)}</button>` : ''}</h2>
       <div class="fields">${fld('advAmt', 'Amount', '', 'inputmode="numeric" required placeholder="500"', '₹', false)}${fld('advDate', 'Date', today(), 'type="date" required', '', false)}${fld('advNote', 'Note', '', 'placeholder="Cash, UPI…"')}</div>
-      <button class="btn btn-dark" type="submit">${ic('wallet', 18)} Save advance</button>
+      <button class="btn btn-dark" type="submit">${ic('wallet', 18)} Save payment</button>
     </form>
     ${adv.length ? `<div class="card list">${adv.map(a => `<div class="li"><div class="li-main"><div class="li-title">${money(a.amount)}</div><div class="li-sub">${pretty(a.date)}${a.note ? ' · ' + esc(a.note) : ''}</div></div><button class="icon-btn" style="background:var(--surface-2);color:var(--brown-700)" data-a="delAdv" data-id="${a.id}" aria-label="Delete advance">${ic('trash', 18)}</button></div>`).join('')}</div>` : ''}
     <h2 class="sec">Details</h2>`;
@@ -1229,11 +1652,11 @@ function workerSheet(id) {
       const amt = n(fd.get('advAmt'));
       if (!amt) return toast('Enter the advance amount');
       S.advances.push({ id: uid(), workerId: w.id, date: fd.get('advDate') || today(), amount: amt, note: String(fd.get('advNote') || '').trim() });
-      save(); render(); workerSheet(w.id); toast(`Advance of ${money(amt)} saved`);
+      save(); render(); workerSheet(w.id); toast(`${money(amt)} paid to ${w.name}`);
       return;
     }
     const name = String(fd.get('wName') || '').trim(), wage = n(fd.get('wWage'));
-    if (!name || !wage) return toast('Name and daily wage are needed');
+    if (!name || !wage) return toast('Name and daily wage are needed', 'warn');
     if (w) Object.assign(w, { name, role: fd.get('wRole'), wage, phone: String(fd.get('wPhone') || '').trim() });
     else S.workers.push({ id: uid(), name, role: fd.get('wRole'), wage, phone: String(fd.get('wPhone') || '').trim(), active: true });
     save(); closeSheet(); render(); toast(w ? 'Worker updated' : `${name} added`);
@@ -1252,7 +1675,8 @@ function stockSheet(kind, prefill = {}, editId) {
         ${fld('sQty', 'Quantity', prefill.qty || '', 'inputmode="decimal" required placeholder="0"', '', false)}
         ${fld('sDate', 'Date', prefill.date || today(), 'type="date" required', '', false)}
         ${kind === 'in' ? fld('sRate', 'Rate per unit', prefill.rate || '', 'inputmode="decimal" placeholder="e.g. 390"', '₹', false) : ''}
-        ${fld('sNote', kind === 'in' ? 'Supplier / bill no.' : 'Used for', prefill.note || '', 'autocomplete="off"', '', kind !== 'in')}
+        ${kind === 'in' ? fld('sSup', 'Supplier', prefill.supplier || '', 'list="supList" autocomplete="off" placeholder="Shop or dealer name"', '', false) + supList() : ''}
+        ${fld('sNote', kind === 'in' ? 'Bill no. / note' : 'Used for', prefill.note || '', 'autocomplete="off"')}
       </div>
       <div class="muted small" id="stockHint"></div>
       <button class="btn btn-primary btn-block" type="submit">${ic('check', 18, 2.5)} ${e ? 'Save changes' : 'Save entry'}</button>
@@ -1261,7 +1685,7 @@ function stockSheet(kind, prefill = {}, editId) {
     const fd = new FormData(form);
     const qty = n(fd.get('sQty'));
     if (!qty) return toast('Enter a quantity');
-    const rec = { mat: fd.get('sMat'), kind, qty, date: fd.get('sDate') || today(), rate: kind === 'in' ? n(fd.get('sRate')) : 0, note: String(fd.get('sNote') || '').trim() };
+    const rec = { mat: fd.get('sMat'), kind, qty, date: fd.get('sDate') || today(), rate: kind === 'in' ? n(fd.get('sRate')) : 0, supplier: kind === 'in' ? String(fd.get('sSup') || '').trim() : '', note: String(fd.get('sNote') || '').trim() };
     if (e) Object.assign(e, rec); else S.stock.push({ id: uid(), ...rec });
     save(); closeSheet(); render();
     const m = matById(rec.mat);
@@ -1270,13 +1694,180 @@ function stockSheet(kind, prefill = {}, editId) {
   const hint = () => { const m = matById($('#sMat').value); $('#stockHint').textContent = `In stock now: ${fmt(balance(m.id))} ${m.unit}`; };
   $('#sMat').addEventListener('change', hint); hint();
 }
+const supList = () => `<datalist id="supList">${suppliers().map(s => `<option value="${esc(s.name)}">`).join('')}</datalist>`;
+const area = (id, label, value, ph) =>
+  `<div class="field full"><label for="${id}">${label}</label><div class="inp"><textarea id="${id}" name="${id}" placeholder="${esc(ph)}">${esc(value)}</textarea></div></div>`;
+
+function expenseSheet(editId) {
+  const e = editId ? S.expenses.find(x => x.id === editId) : null;
+  openSheet(e ? 'Edit expense' : 'Add expense', `
+    <form class="stack" data-form="expense">
+      <div class="fields">
+        ${sel('xCat', 'Spent on', EXP_CATS.map(c => [c, c]), e ? e.cat : 'Transport')}
+        ${fld('xAmt', 'Amount', e ? e.amount : '', 'inputmode="decimal" required placeholder="500"', '₹', false)}
+        ${fld('xDate', 'Date', e ? e.date : today(), 'type="date" required', '', false)}
+        ${fld('xNote', 'Note', e ? e.note : '', 'autocomplete="off" placeholder="Paid to, what for"')}
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">${ic('check', 18, 2.5)} ${e ? 'Save changes' : 'Save expense'}</button>
+      ${e ? `<button class="btn btn-danger btn-block" type="button" data-a="delExpense" data-id="${e.id}">${ic('trash', 18)} Delete expense</button>` : ''}
+    </form>`, form => {
+    const fd = new FormData(form), amount = n(fd.get('xAmt'));
+    if (!amount) return toast('Enter the amount', 'warn');
+    const rec = { cat: fd.get('xCat'), amount, date: fd.get('xDate') || today(), note: String(fd.get('xNote') || '').trim() };
+    if (e) Object.assign(e, rec); else S.expenses.push({ id: uid(), ...rec });
+    save(); closeSheet(); render(); toast(`${money(amount)} ${e ? 'updated' : 'saved'}`);
+  });
+}
+
+function paySheet(name) {
+  const s = name ? suppliers().find(x => sameSupplier(x.name, name)) : null;
+  const hist = s ? S.payments.filter(p => sameSupplier(p.supplier, s.name)).sort((a, b) => b.date.localeCompare(a.date)) : [];
+  const bills = s ? S.stock.filter(e => e.kind === 'in' && sameSupplier(e.supplier, s.name)).sort((a, b) => b.date.localeCompare(a.date)) : [];
+  openSheet(s ? s.name : 'Pay a supplier', `
+    ${s ? `<div class="stats">
+      <div class="stat hero"><div class="stat-label">${s.due >= 0 ? 'Due' : 'Paid extra'}</div><div class="stat-val">${money(Math.abs(s.due))}</div><div class="stat-note">bought ${money(s.bought)}</div></div>
+      <div class="stat"><div class="stat-label">Paid</div><div class="stat-val">${money(s.paid)}</div><div class="stat-note">${hist.length} payments</div></div>
+    </div>` : ''}
+    <form class="card pad stack" data-form="pay">
+      <div class="fields">
+        ${s ? `<input type="hidden" name="pSup" value="${esc(s.name)}">` : fld('pSup', 'Supplier', '', 'list="supList" required autocomplete="off"') + supList()}
+        ${fld('pAmt', 'Amount', s && s.due > 0 ? Math.round(s.due) : '', 'inputmode="decimal" required placeholder="0"', '₹', false)}
+        ${fld('pDate', 'Date', today(), 'type="date" required', '', false)}
+        ${fld('pNote', 'Note', '', 'autocomplete="off" placeholder="Cash, UPI, cheque no."')}
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">${ic('wallet', 18)} Save payment</button>
+    </form>
+    ${hist.length ? `<h2 class="sec">Payments</h2><div class="card list">${hist.map(p => `<div class="li"><div class="li-main"><div class="li-title">${money(p.amount)}</div><div class="li-sub">${pretty(p.date)}${p.note ? ' · ' + esc(p.note) : ''}</div></div><button class="icon-btn" style="background:var(--surface-2);color:var(--brown-700)" data-a="delPay" data-id="${p.id}" aria-label="Delete payment">${ic('trash', 18)}</button></div>`).join('')}</div>` : ''}
+    ${bills.length ? `<h2 class="sec">Material bought</h2><div class="card list">${bills.map(stockRow).join('')}</div>` : ''}`, form => {
+    const fd = new FormData(form), amount = n(fd.get('pAmt')), supplier = String(fd.get('pSup') || '').trim();
+    if (!supplier || !amount) return toast('Enter supplier and amount', 'warn');
+    S.payments.push({ id: uid(), supplier, amount, date: fd.get('pDate') || today(), note: String(fd.get('pNote') || '').trim() });
+    save(); render(); paySheet(supplier); toast(`${money(amount)} paid to ${supplier}`);
+  });
+}
+
+function diarySheet(k) {
+  const d = S.diary[k] || {};
+  openSheet(k === today() ? "Today's diary" : pretty(k), `
+    <form class="stack" data-form="diary">
+      <div class="stack"><h2 class="sec">Weather</h2>
+        <div class="chips">${WEATHER.map(w => `<button type="button" class="chip ${d.weather === w ? 'on' : ''}" data-a="pickWeather" data-v="${w}">${w}</button>`).join('')}</div>
+        <input type="hidden" name="dWeather" id="dWeather" value="${esc(d.weather || '')}"></div>
+      <div class="fields">
+        ${area('dWork', 'Work done', d.work || '', 'e.g. Ground floor slab casting, 2nd coat plaster in kitchen')}
+        ${area('dIssues', 'Problems / material needed', d.issues || '', 'e.g. Sand short, need 200 cft by Friday')}
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">${ic('check', 18, 2.5)} Save diary</button>
+      ${S.diary[k] ? `<button class="btn btn-danger btn-block" type="button" data-a="delDiary" data-d="${k}">${ic('trash', 18)} Delete</button>` : ''}
+    </form>`, form => {
+    const fd = new FormData(form);
+    const rec = { weather: String(fd.get('dWeather') || ''), work: String(fd.get('dWork') || '').trim(), issues: String(fd.get('dIssues') || '').trim() };
+    if (!rec.work && !rec.issues && !rec.weather) delete S.diary[k]; else S.diary[k] = rec;
+    save(); closeSheet(); render(); toast('Diary saved');
+  });
+}
+
+/* ================= Reports ================= */
+const csvCell = v => { v = String(v ?? ''); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
+const csv = rows => '﻿' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');
+function dayText(k) {
+  const marks = S.attendance[k] || {}, c = { P: 0, H: 0, A: 0 };
+  activeWorkers().forEach(w => { if (marks[w.id]) c[marks[w.id].s]++; });
+  const d = S.diary[k] || {};
+  const st = S.stock.filter(e => e.date === k), ex = S.expenses.filter(e => e.date === k);
+  const line = e => { const m = matById(e.mat); return `• ${m.name} ${fmt(e.qty)} ${m.unit}${e.supplier ? ` (${e.supplier})` : ''}${e.note ? ` – ${e.note}` : ''}`; };
+  return [
+    `*${S.siteName}* – ${pretty(k)}${d.weather ? ` · ${d.weather}` : ''}`,
+    `Hajri: ${c.P} present, ${c.H} half, ${c.A} absent · wages ${money(dayWages(k))}`,
+    d.work && `\n*Work done*\n${d.work}`,
+    st.some(e => e.kind === 'in') && `\n*Material received*\n${st.filter(e => e.kind === 'in').map(line).join('\n')}`,
+    st.some(e => e.kind === 'out') && `\n*Material used*\n${st.filter(e => e.kind === 'out').map(line).join('\n')}`,
+    ex.length && `\n*Expenses*\n${ex.map(e => `• ${e.cat} ${money(e.amount)}${e.note ? ` – ${e.note}` : ''}`).join('\n')}`,
+    d.issues && `\n*Problems / needed*\n${d.issues}`
+  ].filter(Boolean).join('\n');
+}
+const REPORTS = {
+  day: { title: "Today's site report", sub: 'Hajri, work done, material, expenses', share: () => dayText(today()) },
+  pay: { title: 'Wages to pay', sub: 'Days, earned, advance and balance per worker',
+    share: m => { const rows = S.workers.map(w => ({ w, ...monthOf(w, m) })).filter(r => r.days || r.adv);
+      return [`*${S.siteName}* – Wages, ${monthName(m)}`, '', ...rows.map(r => `• ${r.w.name} (${r.w.role}): ${fmt(r.days)} days${r.ot ? ` + ${r.ot}h OT` : ''} · earned ${money(r.earned)}${r.adv ? ` · adv ${money(r.adv)}` : ''} · *pay ${money(r.bal)}*`), '', `*Total to pay: ${money(rows.reduce((s, r) => s + r.bal, 0))}*`].join('\n'); },
+    csv: m => [['Name', 'Work', 'Daily wage', 'Days', 'OT hours', 'Earned', 'Advance', 'To pay'], ...S.workers.map(w => { const r = monthOf(w, m); return [w.name, w.role, w.wage, r.days, r.ot, Math.round(r.earned), r.adv, Math.round(r.bal)]; })] },
+  register: { title: 'Hajri register', sub: 'Every worker, every day of the month',
+    csv: m => { const last = new Date(+m.slice(0, 4), +m.slice(5, 7), 0).getDate(), days = Array.from({ length: last }, (_, i) => `${m}-${String(i + 1).padStart(2, '0')}`);
+      return [['Name', 'Work', ...days.map(k => +k.slice(8)), 'Days'], ...S.workers.map(w => [w.name, w.role, ...days.map(k => { const x = (S.attendance[k] || {})[w.id]; return x ? x.s + (x.ot ? `+${x.ot}` : '') : ''; }), monthOf(w, m).days])]; } },
+  stock: { title: 'Material & stock', sub: 'Balance now and every entry of the month',
+    share: m => [`*${S.siteName}* – Stock on ${pretty(today())}`, '', ...S.materials.map(x => `• ${x.name}: ${fmt(balance(x.id))} ${x.unit}`), '', `Material bought in ${monthName(m)}: ${money(monthMaterialSpend(m))}`].join('\n'),
+    csv: m => [['Date', 'Material', 'In / used', 'Qty', 'Unit', 'Rate', 'Amount', 'Supplier', 'Note'], ...S.stock.filter(e => e.date.startsWith(m)).sort((a, b) => a.date.localeCompare(b.date)).map(e => { const x = matById(e.mat); return [e.date, x.name, e.kind === 'in' ? 'Received' : 'Used', e.qty, x.unit, e.rate || '', e.kind === 'in' ? Math.round(e.qty * (e.rate || 0)) : '', e.supplier || '', e.note]; })] },
+  exp: { title: 'Expenses', sub: 'Other spending by category',
+    share: m => { const l = S.expenses.filter(e => e.date.startsWith(m)).sort((a, b) => a.date.localeCompare(b.date));
+      return [`*${S.siteName}* – Expenses, ${monthName(m)}`, '', ...l.map(e => `• ${pretty(e.date)} · ${e.cat} ${money(e.amount)}${e.note ? ` – ${e.note}` : ''}`), '', `*Total: ${money(monthExpenses(m))}*`, `Whole site cost (wages + material + other): ${money(monthWages(m) + monthMaterialSpend(m) + monthExpenses(m))}`].join('\n'); },
+    csv: m => [['Date', 'Category', 'Amount', 'Note'], ...S.expenses.filter(e => e.date.startsWith(m)).sort((a, b) => a.date.localeCompare(b.date)).map(e => [e.date, e.cat, e.amount, e.note])] },
+  sup: { title: 'Supplier dues', sub: 'Bought, paid and due for each supplier',
+    share: () => { const l = suppliers(); return [`*${S.siteName}* – Supplier dues`, '', ...l.map(s => `• ${s.name}: bought ${money(s.bought)} · paid ${money(s.paid)} · *due ${money(s.due)}*`)].join('\n'); },
+    csv: () => [['Supplier', 'Bought', 'Paid', 'Due'], ...suppliers().map(s => [s.name, Math.round(s.bought), s.paid, Math.round(s.due)])] }
+};
+function reportsSheet() {
+  openSheet('Reports', `
+    <div class="datebar">
+      <button class="icon-btn" data-a="repMonth" data-d="-1" aria-label="Previous month">${ic('left')}</button>
+      <div class="when"><div class="when-big">${monthName(ui.month)}</div><div class="when-small">Share on WhatsApp or open in Excel</div></div>
+      <button class="icon-btn" data-a="repMonth" data-d="1" aria-label="Next month">${ic('right')}</button>
+    </div>
+    <div class="card">${Object.entries(REPORTS).map(([id, r]) => `<div class="rep">
+      <div><b>${r.title}</b><div class="li-sub">${r.sub}</div></div>
+      <div class="rep-btns">
+        ${r.share ? `<button class="btn btn-sm btn-primary" data-a="rep" data-r="${id}" data-how="share">${ic('share', 16)} Share</button>` : ''}
+        ${r.csv ? `<button class="btn btn-sm btn-soft" data-a="rep" data-r="${id}" data-how="csv">${ic('file', 16)} Excel</button>` : ''}
+      </div></div>`).join('')}</div>`);
+}
+async function shareText(text) {
+  if (navigator.share) {
+    try { await navigator.share({ text }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a');
+  a.href = 'https://wa.me/?text=' + encodeURIComponent(text); a.target = '_blank'; a.rel = 'noopener'; a.click();
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast('Also copied, paste it anywhere'), () => {});
+}
+async function download(filename, data, type) {
+  const dl = window.claude && window.claude.use ? await claude.use('downloads').catch(() => null) : null;
+  if (dl) {
+    try { await dl.save({ filename, data }); toast('File saved'); }
+    catch (e) { toast(e && e.code === 'declined' ? 'File not saved' : 'Download is not available here', 'warn'); }
+    return;
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type })); a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000); toast('File downloaded');
+}
 
 function settingsSheet() {
-  openSheet('Site settings', `
+  const b = S.brand || {};
+  openSheet('Settings', `
     <form class="stack" data-form="settings">
-      <div class="fields">${fld('siteName', 'Site name', S.siteName, 'required autocomplete="off"')}</div>
-      <button class="btn btn-primary btn-block" type="submit">Save name</button>
+      <div class="profile">
+        <label class="profile-photo" for="photoFile" aria-label="Change photo">
+          <img id="photoPreview" alt="" src="${b.photo || defaultPhoto}"><span class="profile-cam">${ic('camera', 16, 2.2)}</span>
+        </label>
+        <input type="file" id="photoFile" accept="image/*" hidden>
+        <input type="hidden" name="photo" id="photoData" value="${b.photo ? 'keep' : ''}">
+        <div class="profile-btns">
+          <label class="btn btn-soft btn-sm" for="photoFile">${ic('camera', 16)} Change photo</label>
+          <button class="btn btn-ghost btn-sm" type="button" data-a="resetPhoto">Use default</button>
+        </div>
+      </div>
+      <div class="fields">
+        ${fld('brandName', 'Company / your name', b.name || DEFAULT_BRAND, 'required autocomplete="off" maxlength="60"')}
+        ${fld('siteName', 'Site name', S.siteName, 'required autocomplete="off" maxlength="60"')}
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">${ic('check', 18, 2.5)} Save</button>
     </form>
+    <button class="btn btn-soft btn-block" data-a="reportsSheet">${ic('file', 18)} Reports · WhatsApp & Excel</button>
+    <div class="card pad stack">
+      <h2 class="sec">Display</h2>
+      <button class="row" style="width:100%;text-align:left" data-a="toggleBig" role="switch" aria-checked="${document.documentElement.classList.contains('big')}">
+        <span class="action-ic">${ic('text', 20)}</span><span class="grow"><b>Larger text</b><div class="li-sub">Easier to read on site</div></span>
+        <span class="switch ${document.documentElement.classList.contains('big') ? 'on' : ''}"><i></i></span>
+      </button>
+    </div>
     <div class="card pad stack">
       <h2 class="sec">Backup</h2>
       <div class="muted small">${cloud ? 'Your data is saved online in your private account, so it opens on any phone where you sign in.' : 'Your data is saved in this browser on this phone.'} Download a backup file now and then to keep a copy.</div>
@@ -1288,8 +1879,18 @@ function settingsSheet() {
       <div class="muted small">Deletes all workers, hajri, advances and stock from this phone.</div>
       <button class="btn btn-danger" data-a="wipe">Delete all data</button><div id="confirmBox"></div>
     </div>`, form => {
-    S.siteName = String(new FormData(form).get('siteName') || '').trim() || 'My Site';
-    save(); closeSheet(); render(); toast('Site name saved');
+    const fd = new FormData(form), photo = fd.get('photo');
+    S.siteName = String(fd.get('siteName') || '').trim() || 'My Site';
+    const name = String(fd.get('brandName') || '').trim();
+    S.brand = { name: name && name !== DEFAULT_BRAND ? name : '', photo: photo === 'keep' ? (S.brand || {}).photo || '' : photo || '' };
+    save(); closeSheet(); render(); toast('Profile saved');
+  });
+  $('#photoFile').addEventListener('change', async ev => {
+    const file = ev.target.files[0]; if (!file) return;
+    try {
+      const url = await squarePhoto(file, 256);
+      $('#photoPreview').src = url; $('#photoData').value = url;
+    } catch (e) { toast('Could not read that photo', 'warn'); }
   });
   $('#importFile').addEventListener('change', ev => {
     const file = ev.target.files[0]; if (!file) return;
@@ -1312,17 +1913,48 @@ function confirmIn(text, yesLabel, onYes) {
 }
 
 /* ================= Toast ================= */
-let toastT;
-function toast(msg) {
+let toastT, toastUndo = null;
+function toast(msg, kind, undo) {
   const t = $('#toast');
-  t.innerHTML = ic('check', 18, 2.5) + esc(msg);
-  t.classList.add('show');
-  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2400);
+  t.className = 'toast' + (kind === 'warn' ? ' warn' : '');
+  t.innerHTML = ic(kind === 'warn' ? 'x' : 'check', 18, 2.5) + `<span>${esc(msg)}</span>` + (undo ? `<button class="toast-act" data-a="undo">${ic('undo', 14, 2.5)} Undo</button>` : '');
+  toastUndo = undo || null;
+  void t.offsetWidth; t.classList.add('show');
+  if (kind === 'warn' && navigator.vibrate) navigator.vibrate([10, 40, 10]);
+  clearTimeout(toastT); toastT = setTimeout(() => { t.classList.remove('show'); toastUndo = null; }, undo ? 5000 : 2400);
+}
+// Run a destructive change; the toast offers Undo for five seconds.
+function withUndo(msg, change) {
+  const before = JSON.stringify(S);
+  change();
+  save(); render();
+  toast(msg, null, () => { S = JSON.parse(before); save(); render(); toast('Restored'); });
 }
 
 /* ================= Actions ================= */
 const A = {
-  tab: d => { if (ui.tab === d.id && !ui.calc) return; const order = TABS.map(t => t.id); const back = order.indexOf(d.id) < order.indexOf(ui.tab); ui.tab = d.id; if (d.id === 'calc') ui.calc = null; render(back ? 'back' : 'in'); scrollTo({ top: 0, behavior: 'smooth' }); },
+  tab: d => { if (ui.tab === d.id && !ui.calc) return; const order = TABS.map(t => t.id); const back = order.indexOf(d.id) < order.indexOf(ui.tab); ui.tab = d.id; if (d.id === 'calc') ui.calc = null; if (navigator.vibrate) navigator.vibrate(6); render(back ? 'back' : 'in'); scrollTo({ top: 0, behavior: 'smooth' }); guardBack(); },
+  undo: () => { const u = toastUndo; toastUndo = null; $('#toast').classList.remove('show'); if (u) u(); },
+  toggleBig: () => { const on = document.documentElement.classList.toggle('big'); try { localStorage.setItem('sitebook-big', on ? '1' : '0'); } catch (e) {} render(); settingsSheet(); },
+  resetPhoto: () => { $('#photoPreview').src = defaultPhoto; $('#photoData').value = ''; },
+  stockView: d => { ui.stockView = d.v; render('in'); },
+  expenseSheet: d => expenseSheet(d.id),
+  delExpense: d => { closeSheet(); withUndo('Expense deleted', () => { S.expenses = S.expenses.filter(e => e.id !== d.id); }); },
+  paySheet: d => paySheet(d.s),
+  delPay: d => { const p = S.payments.find(x => x.id === d.id); closeSheet(); withUndo('Payment deleted', () => { S.payments = S.payments.filter(x => x.id !== d.id); }); if (p) paySheet(p.supplier); },
+  diarySheet: d => diarySheet(d.d || today()),
+  pickWeather: (d, el) => { const inp = $('#dWeather'), on = inp.value !== d.v; inp.value = on ? d.v : ''; el.parentNode.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', on && c === el)); },
+  delDiary: d => { closeSheet(); withUndo('Diary deleted', () => { delete S.diary[d.d]; }); },
+  shareDay: d => shareText(dayText(d.d)),
+  reportsSheet: () => reportsSheet(),
+  repMonth: d => { ui.month = shiftMonth(ui.month, +d.d); reportsSheet(); },
+  rep: d => {
+    const r = REPORTS[d.r], m = ui.month;
+    if (d.how === 'share') return shareText(d.r === 'day' ? dayText(today()) : r.share(m));
+    const slug = (S.siteName || 'site').replace(/[^\w]+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+    download(`${slug}-${d.r}-${d.r === 'sup' ? today() : m}.csv`, csv(r.csv(m)), 'text/csv');
+  },
+  fillPay: d => { const f = $('#advAmt'); if (f) { f.value = d.v; $('#advNote').value = 'Full payment'; } },
   go: d => A.tab({ id: d.tab }),
   settings: () => settingsSheet(),
   closeSheet: () => closeSheet(),
@@ -1353,24 +1985,26 @@ const A = {
   workerSheet: d => workerSheet(d.id),
   toggleActive: d => { const w = S.workers.find(x => x.id === d.id); w.active = w.active === false; save(); closeSheet(); render(); toast(w.active ? `${w.name} is back on site` : `${w.name} marked as left`); },
   delWorker: d => confirmIn('Delete this worker and all their hajri?', 'Delete', () => {
-    S.workers = S.workers.filter(w => w.id !== d.id);
-    S.advances = S.advances.filter(a => a.workerId !== d.id);
-    Object.values(S.attendance).forEach(day => delete day[d.id]);
-    save(); closeSheet(); render(); toast('Worker deleted');
+    closeSheet();
+    withUndo('Worker deleted', () => {
+      S.workers = S.workers.filter(w => w.id !== d.id);
+      S.advances = S.advances.filter(a => a.workerId !== d.id);
+      Object.values(S.attendance).forEach(day => delete day[d.id]);
+    });
   }),
-  delAdv: d => { const a = S.advances.find(x => x.id === d.id); S.advances = S.advances.filter(x => x.id !== d.id); save(); render(); workerSheet(a.workerId); toast('Advance deleted'); },
+  delAdv: d => { const a = S.advances.find(x => x.id === d.id); withUndo('Payment deleted', () => { S.advances = S.advances.filter(x => x.id !== d.id); }); workerSheet(a.workerId); },
 
   pickMat: d => { if (ui.tab !== 'stock') { ui.tab = 'stock'; ui.stockMat = d.id; render('in'); return; } ui.stockMat = ui.stockMat === d.id ? 'all' : d.id; render(); },
   stockSheet: d => stockSheet(d.kind),
   stockEdit: d => stockSheet(null, {}, d.id),
-  delStock: d => { S.stock = S.stock.filter(e => e.id !== d.id); save(); closeSheet(); render(); toast('Entry deleted'); },
+  delStock: d => { closeSheet(); withUndo('Entry deleted', () => { S.stock = S.stock.filter(e => e.id !== d.id); }); },
   matSheet: () => openSheet('New material', `<form class="stack" data-form="mat"><div class="fields">${fld('mName', 'Name', '', 'required autocomplete="off" placeholder="e.g. Tiles"', '', false)}${fld('mUnit', 'Unit', '', 'required autocomplete="off" placeholder="box, sq ft, nos"', '', false)}</div><button class="btn btn-primary btn-block" type="submit">Add material</button></form>`, form => {
     const fd = new FormData(form), name = String(fd.get('mName')).trim(), unit = String(fd.get('mUnit')).trim();
     if (!name || !unit) return toast('Enter name and unit');
     S.materials.push({ id: uid(), name, unit }); save(); closeSheet(); render(); toast(`${name} added`);
   }),
 
-  openCalc: d => { ui.tab = 'calc'; ui.calc = d.id; ui.cs[d.id] = ui.cs[d.id] || freshCalc(d.id); render('in'); scrollTo({ top: 0, behavior: 'smooth' }); },
+  openCalc: d => { ui.tab = 'calc'; ui.calc = d.id; ui.cs[d.id] = ui.cs[d.id] || freshCalc(d.id); render('in'); scrollTo({ top: 0, behavior: 'smooth' }); guardBack(); },
   closeCalc: () => { ui.calc = null; render('back'); },
   cel: d => { const cs = ui.cs[ui.calc]; ui.cs[ui.calc] = { ...freshCalc(ui.calc, d.v, cs.sys), ...(ui.calc === 'concrete' ? {} : { thick: cs.thick, mortar: cs.mortar, mix: cs.mix, sides: cs.sides }) }; if (ui.calc === 'concrete') ui.cs.concrete.waste = cs.waste; render(); },
   csys: d => {
@@ -1398,18 +2032,8 @@ const A = {
 
   acc: d => { ui.guideOpen[d.id] = !ui.guideOpen[d.id]; const el = document.querySelector(`[data-acc="${d.id}"]`); el.classList.toggle('open'); el.querySelector('.acc-head').setAttribute('aria-expanded', !!ui.guideOpen[d.id]); },
 
-  export: async () => {
-    const data = JSON.stringify(S, null, 2), filename = `sitebook-backup-${today()}.json`;
-    const dl = window.claude && window.claude.use ? await claude.use('downloads').catch(() => null) : null;
-    if (dl) {
-      try { await dl.save({ filename, data }); toast('Backup saved'); }
-      catch (e) { toast(e && e.code === 'declined' ? 'Backup not saved' : 'Backup is not available here'); }
-      return;
-    }
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = filename; a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000); toast('Backup downloaded');
-  },
-  wipe: () => confirmIn('This cannot be undone.', 'Delete all', () => { S = emptyData(); save(); closeSheet(); render('in'); toast('All data deleted'); })
+  export: () => download(`sitebook-backup-${today()}.json`, JSON.stringify(S, null, 2), 'application/json'),
+  wipe: () => confirmIn('Everything on this site will be deleted.', 'Delete all', () => { closeSheet(); withUndo('All data deleted', () => { S = { ...emptyData(), brand: S.brand }; }); })
 };
 
 document.addEventListener('click', e => {
@@ -1432,10 +2056,10 @@ document.addEventListener('change', e => {
   const k = e.target.dataset && e.target.dataset.f;
   if (k && ui.calc && e.target.tagName === 'SELECT') { ui.cs[ui.calc].v[k] = e.target.value; updateCalc(true); }
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheetOpen()) { if (topLevel && guarded) history.back(); else closeSheet(); } });
 addEventListener('resize', () => { renderTabs(); layoutSegs(document); });
 
-document.querySelector('[data-a="settings"]').innerHTML = ic('sliders', 20);
+document.querySelector('.top-inner > .icon-btn[data-a="settings"]').innerHTML = ic('sliders', 20);
 document.querySelector('.sheet-head [data-a="closeSheet"]').innerHTML = ic('x', 20);
 render('in');
 connectCloud();
